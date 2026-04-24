@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/utils/api';
@@ -11,7 +11,7 @@ import {
   setPublisherSession,
 } from '@/utils/auth';
 
-export default function Login() {
+function LoginContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -71,7 +71,9 @@ export default function Login() {
             Store<span className="text-accent">Gram</span>
           </Link>
           <p className="mt-4 text-xs uppercase tracking-[0.32em] text-muted">Publisher Access</p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">Welcome back</h1>
+          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
+            Welcome back
+          </h1>
           <p className="mt-3 text-sm text-muted">
             Sign in to upload content, track analytics, and manage your account.
           </p>
@@ -109,7 +111,10 @@ export default function Login() {
           </div>
 
           <div className="flex justify-end">
-            <Link href="/forgot-password" className="text-sm font-medium text-accent transition hover:text-accent-hover">
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-accent transition hover:text-accent-hover"
+            >
               Forgot password?
             </Link>
           </div>
@@ -126,5 +131,13 @@ export default function Login() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Login() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <LoginContent />
+    </Suspense>
   );
 }
