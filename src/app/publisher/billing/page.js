@@ -20,20 +20,20 @@ export default function Billing() {
     pagination: null,
   });
 
-  const loadEarnings = async () => {
-    try {
-      setError('');
-      const response = await api.get('/api/payments/earnings', { params: { page, limit } });
-      setEarnings(response.data || {});
-    } catch (err) {
-      console.error('Failed to fetch earnings', err);
-      setError(err.response?.data?.error || 'Failed to load billing data.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const loadEarnings = async () => {
+      try {
+        setError('');
+        const response = await api.get('/api/payments/earnings', { params: { page, limit } });
+        setEarnings(response.data || {});
+      } catch (err) {
+        console.error('Failed to fetch earnings', err);
+        setError(err.response?.data?.error || 'Failed to load billing data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     const timeoutId = window.setTimeout(() => {
       void loadEarnings();
     }, 0);
@@ -67,7 +67,9 @@ export default function Billing() {
         ...current,
         walletBalance: response.data.walletBalance ?? current.walletBalance,
       }));
-      await loadEarnings();
+
+      const refreshedResponse = await api.get('/api/payments/earnings', { params: { page, limit } });
+      setEarnings(refreshedResponse.data || {});
     } catch (err) {
       console.error('Withdrawal request failed', err);
       setError(err.response?.data?.error || 'Failed to submit withdrawal request.');
@@ -80,76 +82,81 @@ export default function Billing() {
     return <div>Loading billing data...</div>;
   }
 
-  const approvedTransactions = (earnings.transactions || []).filter((transaction) => transaction.status === 'APPROVED').length;
-  const pendingTransactions = (earnings.transactions || []).filter((transaction) => transaction.status === 'PENDING').length;
+  const approvedTransactions = (earnings.transactions || []).filter(
+    (transaction) => transaction.status === 'APPROVED'
+  ).length;
+  const pendingTransactions = (earnings.transactions || []).filter(
+    (transaction) => transaction.status === 'PENDING'
+  ).length;
 
   return (
     <div className="animate-fade-in">
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '2rem' }}>Billing & Withdrawals</h1>
+      <h1 className="mb-8 text-3xl font-extrabold sm:text-4xl">Billing & Withdrawals</h1>
 
       {(error || message) && (
         <div
-          className="card"
+          className="card mb-6"
           style={{
-            marginBottom: '1.5rem',
             borderColor: error ? 'rgba(255, 77, 77, 0.3)' : 'rgba(0, 204, 102, 0.3)',
-            color: error ? 'var(--danger)' : 'var(--success)'
+            color: error ? 'var(--danger)' : 'var(--success)',
           }}
         >
           {error || message}
         </div>
       )}
-      
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginBottom: '2rem' }}>
-        <div className="card" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-            <div style={{ padding: '1rem', borderRadius: '50%', backgroundColor: 'rgba(0, 204, 102, 0.1)' }}>
+
+      <div className="mb-8 grid gap-6 xl:grid-cols-3">
+        <div className="card flex flex-col justify-center">
+          <div className="mb-4 flex items-center gap-4">
+            <div className="rounded-full bg-[rgba(0,204,102,0.1)] p-4">
               <DollarSign size={32} color="var(--success)" />
             </div>
-            <div>
-              <p style={{ color: 'var(--text-secondary)' }}>Available Balance</p>
-              <h2 style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>${Number(earnings.walletBalance || 0).toFixed(2)}</h2>
+            <div className="min-w-0">
+              <p className="text-sm text-muted">Available Balance</p>
+              <h2 className="text-3xl font-extrabold sm:text-4xl">
+                ${Number(earnings.walletBalance || 0).toFixed(2)}
+              </h2>
             </div>
           </div>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+          <p className="text-sm text-muted">
             API total earned: ${Number(earnings.totalEarned || 0).toFixed(2)}
           </p>
         </div>
 
-        <div className="card" style={{ display: 'grid', gap: '1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <div className="card grid gap-4">
+          <div className="flex items-center gap-3">
             <ReceiptText size={24} color="var(--accent-primary)" />
             <div>
-              <p style={{ color: 'var(--text-secondary)' }}>Approved Transactions</p>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{approvedTransactions}</h3>
+              <p className="text-sm text-muted">Approved Transactions</p>
+              <h3 className="text-2xl font-bold">{approvedTransactions}</h3>
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <div className="flex items-center gap-3">
             <Clock size={24} color="#ffcc00" />
             <div>
-              <p style={{ color: 'var(--text-secondary)' }}>Pending Withdrawals</p>
-              <h3 style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{pendingTransactions}</h3>
+              <p className="text-sm text-muted">Pending Withdrawals</p>
+              <h3 className="text-2xl font-bold">{pendingTransactions}</h3>
             </div>
           </div>
         </div>
 
         <div className="card">
-          <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Request Withdrawal via API</h3>
-          <form onSubmit={handleWithdraw} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <div className="input-group" style={{ marginBottom: 0 }}>
+          <h3 className="mb-4 text-xl font-bold">Request Withdrawal via API</h3>
+          <form onSubmit={handleWithdraw} className="grid gap-4">
+            <div className="input-group">
               <label>Amount to Withdraw ($)</label>
-              <input 
-                type="number" 
-                className="input" 
-                placeholder="0.00" 
-                min="0.01" 
-                step="0.01" 
+              <input
+                type="number"
+                className="input"
+                placeholder="0.00"
+                min="0.01"
+                step="0.01"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
-                required 
+                required
               />
             </div>
-            <div className="input-group" style={{ marginBottom: 0 }}>
+            <div className="input-group">
               <label>Reference / Payout Details</label>
               <input
                 type="text"
@@ -158,11 +165,11 @@ export default function Billing() {
                 value={referenceId}
                 onChange={(e) => setReferenceId(e.target.value)}
               />
-              <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+              <p className="text-sm text-muted">
                 The backend expects this in the `referenceId` field for `POST /api/payments/request`.
               </p>
             </div>
-            <button type="submit" className="btn btn-primary" style={{ marginTop: '0.5rem' }} disabled={submitting}>
+            <button type="submit" className="btn btn-primary mt-2 w-full sm:w-auto" disabled={submitting}>
               {submitting ? 'Submitting...' : 'Submit Withdrawal Request'}
             </button>
           </form>
@@ -170,46 +177,92 @@ export default function Billing() {
       </div>
 
       <div className="card table-container">
-        <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1.5rem' }}>Transaction History</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Transaction Ref</th>
-              <th>Amount</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            {(earnings.transactions || []).map(tx => (
-              <tr key={tx.id}>
-                <td>{tx.created_at ? new Date(tx.created_at).toLocaleDateString() : 'N/A'}</td>
-                <td style={{ color: 'var(--text-secondary)' }}>{tx.reference_id || 'N/A'}</td>
-                <td style={{ fontWeight: 'bold', color: Number(tx.amount) >= 0 ? 'var(--success)' : 'var(--text-primary)' }}>
-                  ${Math.abs(Number(tx.amount || 0)).toFixed(2)} {Number(tx.amount) < 0 ? 'withdrawal' : 'earning'}
-                </td>
-                <td>
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '0.25rem',
-                      color: tx.status === 'APPROVED' ? 'var(--success)' : tx.status === 'PENDING' ? '#ffcc00' : 'var(--danger)'
-                    }}
-                  >
-                    {tx.status === 'APPROVED' ? <CheckCircle size={12} /> : tx.status === 'PENDING' ? <Clock size={12} /> : <ArrowRightLeft size={12} />}
-                    {tx.status}
-                  </span>
-                </td>
-              </tr>
-            ))}
-            {(earnings.transactions || []).length === 0 && (
+        <h3 className="mb-5 text-xl font-bold">Transaction History</h3>
+
+        <div className="space-y-4 md:hidden">
+          {(earnings.transactions || []).map((tx) => (
+            <div key={tx.id} className="rounded-2xl border border-border bg-surface-strong p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-sm text-muted">
+                    {tx.created_at ? new Date(tx.created_at).toLocaleDateString() : 'N/A'}
+                  </div>
+                  <div className="mt-1 break-all text-sm text-muted">{tx.reference_id || 'N/A'}</div>
+                </div>
+                <span
+                  className="inline-flex items-center gap-1 text-sm font-semibold"
+                  style={{
+                    color:
+                      tx.status === 'APPROVED'
+                        ? 'var(--success)'
+                        : tx.status === 'PENDING'
+                          ? '#ffcc00'
+                          : 'var(--danger)',
+                  }}
+                >
+                  {tx.status === 'APPROVED' ? <CheckCircle size={12} /> : tx.status === 'PENDING' ? <Clock size={12} /> : <ArrowRightLeft size={12} />}
+                  {tx.status}
+                </span>
+              </div>
+              <div className="mt-3 text-base font-bold" style={{ color: Number(tx.amount) >= 0 ? 'var(--success)' : 'var(--text-primary)' }}>
+                ${Math.abs(Number(tx.amount || 0)).toFixed(2)} {Number(tx.amount) < 0 ? 'withdrawal' : 'earning'}
+              </div>
+            </div>
+          ))}
+          {(earnings.transactions || []).length === 0 && (
+            <div className="rounded-2xl border border-border bg-surface-strong p-4 text-center text-sm text-muted">
+              No transactions found.
+            </div>
+          )}
+        </div>
+
+        <div className="hidden md:block">
+          <table>
+            <thead>
               <tr>
-                <td colSpan="4" style={{ textAlign: 'center' }}>No transactions found.</td>
+                <th>Date</th>
+                <th>Transaction Ref</th>
+                <th>Amount</th>
+                <th>Status</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {(earnings.transactions || []).map((tx) => (
+                <tr key={tx.id}>
+                  <td>{tx.created_at ? new Date(tx.created_at).toLocaleDateString() : 'N/A'}</td>
+                  <td style={{ color: 'var(--text-secondary)' }}>{tx.reference_id || 'N/A'}</td>
+                  <td style={{ fontWeight: 'bold', color: Number(tx.amount) >= 0 ? 'var(--success)' : 'var(--text-primary)' }}>
+                    ${Math.abs(Number(tx.amount || 0)).toFixed(2)} {Number(tx.amount) < 0 ? 'withdrawal' : 'earning'}
+                  </td>
+                  <td>
+                    <span
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '0.25rem',
+                        color:
+                          tx.status === 'APPROVED'
+                            ? 'var(--success)'
+                            : tx.status === 'PENDING'
+                              ? '#ffcc00'
+                              : 'var(--danger)',
+                      }}
+                    >
+                      {tx.status === 'APPROVED' ? <CheckCircle size={12} /> : tx.status === 'PENDING' ? <Clock size={12} /> : <ArrowRightLeft size={12} />}
+                      {tx.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              {(earnings.transactions || []).length === 0 && (
+                <tr>
+                  <td colSpan="4" style={{ textAlign: 'center' }}>No transactions found.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
         <PaginationControls
           pagination={earnings.pagination}
           onPageChange={setPage}

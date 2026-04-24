@@ -1,17 +1,20 @@
 'use client';
+
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  UploadCloud, 
-  Folder, 
-  ListVideo, 
-  TrendingUp, 
-  Users, 
-  Palette, 
+import {
+  LayoutDashboard,
+  UploadCloud,
+  Folder,
+  ListVideo,
+  TrendingUp,
+  Users,
+  Palette,
   CreditCard,
+  Shield,
   LogOut,
-  Menu
+  Menu,
+  X,
 } from 'lucide-react';
 import { useState } from 'react';
 import api from '@/utils/api';
@@ -21,7 +24,7 @@ import { clearPublisherSession, getStoredPublisherUser } from '@/utils/auth';
 export default function PublisherLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [publisherName] = useState(() => {
     const user = getStoredPublisherUser();
     return user?.name || 'Publisher';
@@ -57,63 +60,78 @@ export default function PublisherLayout({ children }) {
         { name: 'File Manager', path: '/publisher/files', icon: Folder },
         { name: 'View Analytics', path: '/publisher/progress', icon: TrendingUp },
         { name: 'Referrals', path: '/publisher/refer', icon: Users },
-      ]
+      ],
     },
     {
       title: 'Account',
       items: [
         { name: 'Billing', path: '/publisher/billing', icon: CreditCard },
+        { name: 'Security', path: '/publisher/security', icon: Shield },
         { name: 'API Status', path: '/publisher/branding', icon: Palette },
         { name: 'Unsupported', path: '/publisher/playlists', icon: ListVideo },
-      ]
-    }
+      ],
+    },
   ];
 
   return (
     <PublisherAuthGuard>
-      <div style={{ display: 'flex', minHeight: '100vh', backgroundColor: 'var(--bg-primary)' }}>
-        {/* Sidebar */}
-        <aside style={{
-          width: sidebarOpen ? '260px' : '0px',
-          overflow: 'hidden',
-          backgroundColor: 'var(--bg-secondary)',
-          borderRight: '1px solid var(--border-color)',
-          transition: 'width 0.3s ease',
-          display: 'flex',
-          flexDirection: 'column',
-          position: 'fixed',
-          height: '100vh',
-          zIndex: 40
-        }}>
-          <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Link href="/" style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>
-              Store<span style={{ color: 'var(--accent-primary)' }}>Gram</span>
+      <div className="min-h-screen bg-background text-foreground">
+        {sidebarOpen && (
+          <button
+            type="button"
+            aria-label="Close navigation overlay"
+            className="fixed inset-0 z-40 bg-black/70 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        <aside
+          className={`fixed inset-y-0 left-0 z-50 flex w-[272px] flex-col border-r border-border bg-surface/95 backdrop-blur transition-transform duration-300 lg:translate-x-0 ${
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
+        >
+          <div className="flex items-center justify-between border-b border-border px-5 py-5">
+            <Link
+              href="/"
+              className="text-xl font-semibold tracking-tight"
+              onClick={() => setSidebarOpen(false)}
+            >
+              Store<span className="text-accent">Gram</span>
             </Link>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="rounded-xl border border-border p-2 text-muted transition hover:border-accent hover:text-foreground lg:hidden"
+              aria-label="Close sidebar"
+            >
+              <X size={18} />
+            </button>
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem 1rem' }}>
-            {menuSections.map((section, idx) => (
-              <div key={idx} style={{ marginBottom: '2rem' }}>
-                <h4 style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: 'var(--text-secondary)', marginBottom: '0.75rem', letterSpacing: '0.05em', paddingLeft: '0.5rem' }}>
+          <div className="flex-1 overflow-y-auto px-4 py-6">
+            {menuSections.map((section) => (
+              <div key={section.title} className="mb-8">
+                <h4 className="mb-3 px-3 text-xs uppercase tracking-[0.24em] text-muted">
                   {section.title}
                 </h4>
-                <ul style={{ listStyle: 'none', padding: 0 }}>
+                <ul className="space-y-2">
                   {section.items.map((item) => {
                     const Icon = item.icon;
-                    const isActive = pathname === item.path;
+                    const isActive =
+                      pathname === item.path ||
+                      (item.path !== '/publisher' && pathname.startsWith(item.path));
+
                     return (
-                      <li key={item.path} style={{ marginBottom: '0.25rem' }}>
-                        <Link href={item.path} style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          padding: '0.75rem 1rem',
-                          borderRadius: '8px',
-                          color: isActive ? '#fff' : 'var(--text-secondary)',
-                          backgroundColor: isActive ? 'var(--accent-primary)' : 'transparent',
-                          transition: 'all 0.2s',
-                          fontWeight: isActive ? 600 : 400
-                        }}>
-                          <Icon size={18} style={{ marginRight: '0.75rem' }} />
+                      <li key={item.path}>
+                        <Link
+                          href={item.path}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
+                            isActive
+                              ? 'bg-accent text-white shadow-[0_14px_34px_rgba(0,160,254,0.26)]'
+                              : 'text-muted hover:bg-white/5 hover:text-foreground'
+                          }`}
+                        >
+                          <Icon size={18} />
                           {item.name}
                         </Link>
                       </li>
@@ -124,34 +142,41 @@ export default function PublisherLayout({ children }) {
             ))}
           </div>
 
-          <div style={{ padding: '1.5rem', borderTop: '1px solid var(--border-color)' }}>
+          <div className="border-t border-border px-4 py-5">
             <button
               onClick={handleLogout}
-              style={{ display: 'flex', alignItems: 'center', color: 'var(--danger)', width: '100%', padding: '0.75rem 1rem', borderRadius: '8px' }}
+              className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-danger transition hover:bg-danger/10"
             >
-              <LogOut size={18} style={{ marginRight: '0.75rem' }} />
+              <LogOut size={18} />
               {isLoggingOut ? 'Logging out...' : 'Logout'}
             </button>
           </div>
         </aside>
 
-        {/* Main Content */}
-        <div style={{ flex: 1, marginLeft: sidebarOpen ? '260px' : '0px', transition: 'margin-left 0.3s ease', display: 'flex', flexDirection: 'column' }}>
-          <header className="glass" style={{ padding: '1rem 2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 30 }}>
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} style={{ color: 'var(--text-primary)', padding: '0.5rem', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-              <Menu size={20} />
-            </button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <span style={{ fontSize: '0.875rem', color: 'var(--text-secondary)' }}>Welcome, {publisherName}!</span>
-              <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--accent-primary)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                {publisherInitial}
+        <div className="min-h-screen lg:pl-[272px]">
+          <header className="glass sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-4 md:px-6">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setSidebarOpen((current) => !current)}
+                className="rounded-2xl border border-border bg-surface/70 p-3 text-foreground transition hover:border-accent hover:bg-white/5 lg:hidden"
+                aria-label="Toggle sidebar"
+              >
+                <Menu size={20} />
+              </button>
+              <div className="min-w-0">
+                <p className="text-xs uppercase tracking-[0.24em] text-muted">Publisher workspace</p>
+                <p className="truncate text-sm font-medium text-foreground sm:text-base">
+                  Welcome, {publisherName}
+                </p>
               </div>
+            </div>
+
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-bold text-white shadow-[0_10px_24px_rgba(0,160,254,0.24)]">
+              {publisherInitial}
             </div>
           </header>
 
-          <main style={{ padding: '2rem', flex: 1 }}>
-            {children}
-          </main>
+          <main className="p-4 md:p-6 lg:p-8">{children}</main>
         </div>
       </div>
     </PublisherAuthGuard>

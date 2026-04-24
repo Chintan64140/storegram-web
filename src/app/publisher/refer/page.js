@@ -29,26 +29,26 @@ export default function Refer() {
     return referralCode ? `${window.location.origin}/register?ref=${referralCode}` : '';
   }, [referralCode]);
 
-  const fetchReferralData = async () => {
-    try {
-      setError('');
-      const [statsResponse, usersResponse] = await Promise.all([
-        api.get('/api/referrals/stats'),
-        api.get('/publisher/analytics/users', { params: { page, limit } }),
-      ]);
-
-      setStats(statsResponse.data || {});
-      setUsers(usersResponse.data.data || []);
-      setPagination(usersResponse.data.pagination || null);
-    } catch (err) {
-      console.error('Failed to load referral data', err);
-      setError(err.response?.data?.error || 'Failed to load referral data.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchReferralData = async () => {
+      try {
+        setError('');
+        const [statsResponse, usersResponse] = await Promise.all([
+          api.get('/api/referrals/stats'),
+          api.get('/publisher/analytics/users', { params: { page, limit } }),
+        ]);
+
+        setStats(statsResponse.data || {});
+        setUsers(usersResponse.data.data || []);
+        setPagination(usersResponse.data.pagination || null);
+      } catch (err) {
+        console.error('Failed to load referral data', err);
+        setError(err.response?.data?.error || 'Failed to load referral data.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
     const timeoutId = window.setTimeout(() => {
       void fetchReferralData();
     }, 0);
@@ -73,102 +73,130 @@ export default function Refer() {
 
   return (
     <div className="animate-fade-in">
-      <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '2rem' }}>Referral Program</h1>
+      <h1 className="mb-8 text-3xl font-extrabold sm:text-4xl">Referral Program</h1>
 
       {error && (
-        <div className="card" style={{ marginBottom: '1.5rem', borderColor: 'rgba(255, 77, 77, 0.3)', color: 'var(--danger)' }}>
+        <div className="card mb-6" style={{ borderColor: 'rgba(255, 77, 77, 0.3)', color: 'var(--danger)' }}>
           {error}
         </div>
       )}
-      
-      <div className="card" style={{ marginBottom: '2rem' }}>
-        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-          <div style={{ flex: '1 1 300px' }}>
-            <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Earn {stats.bonusPercentage || '5%'} from referred publishers</h3>
-            <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem', lineHeight: 1.6 }}>
-              Share the registration URL below. The backend accepts `referralCode` during publisher signup and tracks referral stats through `/api/referrals/stats` and `/publisher/analytics/users`.
+
+      <div className="card mb-8">
+        <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
+          <div>
+            <h3 className="mb-4 text-xl font-bold">
+              Earn {stats.bonusPercentage || '5%'} from referred publishers
+            </h3>
+            <p className="mb-6 text-sm leading-7 text-muted sm:text-base">
+              Share the registration URL below. The backend accepts `referralCode` during
+              publisher signup and tracks referral stats through `/api/referrals/stats` and
+              `/publisher/analytics/users`.
             </p>
-            
-            <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.5rem' }}>Your Referral Link</label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <input 
-                  type="text" 
-                  value={referralLink} 
-                  readOnly 
-                  className="input" 
-                  style={{ flex: 1, color: 'var(--accent-primary)', backgroundColor: 'var(--accent-light)' }} 
+
+            <div className="mb-4">
+              <label className="mb-2 block text-sm text-muted">Your Referral Link</label>
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <input
+                  type="text"
+                  value={referralLink}
+                  readOnly
+                  className="input flex-1"
+                  style={{ color: 'var(--accent-primary)', backgroundColor: 'var(--accent-light)' }}
                 />
-                <button onClick={handleCopy} className="btn btn-primary" style={{ padding: '0 1rem' }}>
+                <button onClick={handleCopy} className="btn btn-primary w-full sm:w-auto">
                   {copied ? 'Copied!' : <Copy size={18} />}
                 </button>
               </div>
             </div>
 
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-              <strong style={{ color: 'var(--text-primary)' }}>Referral Code:</strong> {referralCode || 'Not available'}
+            <div className="text-sm text-muted">
+              <strong className="text-foreground">Referral Code:</strong> {referralCode || 'Not available'}
             </div>
           </div>
-          
-          <div style={{ flex: '1 1 300px', display: 'grid', gap: '1rem' }}>
-            <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '1.5rem', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <div style={{ padding: '1rem', borderRadius: '50%', backgroundColor: 'rgba(0, 204, 102, 0.1)' }}>
+
+          <div className="grid gap-4">
+            <div className="rounded-2xl bg-surface-strong p-5">
+              <div className="flex items-center gap-4">
+                <div className="rounded-full bg-[rgba(0,204,102,0.1)] p-4">
                   <Users size={28} color="var(--success)" />
                 </div>
                 <div>
-                  <p style={{ color: 'var(--text-secondary)' }}>Referred Publishers</p>
-                  <h3 style={{ fontSize: '1.75rem', fontWeight: 'bold' }}>{stats.totalReferredPublishers || users.length}</h3>
+                  <p className="text-sm text-muted">Referred Publishers</p>
+                  <h3 className="text-3xl font-bold">{stats.totalReferredPublishers || users.length}</h3>
                 </div>
               </div>
             </div>
 
-            <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '1.5rem', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
+            <div className="rounded-2xl bg-surface-strong p-5">
+              <div className="mb-3 flex items-center gap-3">
                 <BadgePercent size={24} color="var(--accent-primary)" />
-                <span style={{ color: 'var(--text-secondary)' }}>Referral Bonus Rate</span>
+                <span className="text-sm text-muted">Referral Bonus Rate</span>
               </div>
-              <h3 style={{ fontSize: '1.75rem', fontWeight: 'bold' }}>{stats.bonusPercentage || '5%'}</h3>
+              <h3 className="text-3xl font-bold">{stats.bonusPercentage || '5%'}</h3>
             </div>
 
-            <div style={{ backgroundColor: 'var(--bg-tertiary)', padding: '1.5rem', borderRadius: '8px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.75rem' }}>
+            <div className="rounded-2xl bg-surface-strong p-5">
+              <div className="mb-3 flex items-center gap-3">
                 <Wallet size={24} color="var(--success)" />
-                <span style={{ color: 'var(--text-secondary)' }}>API-Reported Referral Earnings</span>
+                <span className="text-sm text-muted">API-Reported Referral Earnings</span>
               </div>
-              <h3 style={{ fontSize: '1.75rem', fontWeight: 'bold', color: 'var(--success)' }}>${Number(stats.totalReferralEarnings || 0).toFixed(2)}</h3>
+              <h3 className="text-3xl font-bold text-success">
+                ${Number(stats.totalReferralEarnings || 0).toFixed(2)}
+              </h3>
             </div>
           </div>
         </div>
       </div>
 
       <div className="card table-container">
-        <h3 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '1rem' }}>Referred Users</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Role</th>
-              <th>Joined</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.name || 'Unnamed User'}</td>
-                <td style={{ color: 'var(--text-secondary)' }}>{user.email}</td>
-                <td>{user.role}</td>
-                <td>{new Date(user.created_at).toLocaleDateString()}</td>
-              </tr>
-            ))}
-            {users.length === 0 && (
+        <h3 className="mb-4 text-xl font-bold">Referred Users</h3>
+
+        <div className="space-y-4 md:hidden">
+          {users.map((user) => (
+            <div key={user.id} className="rounded-2xl border border-border bg-surface-strong p-4">
+              <div className="font-semibold text-white">{user.name || 'Unnamed User'}</div>
+              <div className="mt-1 break-all text-sm text-muted">{user.email}</div>
+              <div className="mt-3 grid gap-1 text-sm text-muted">
+                <div>Role: {user.role}</div>
+                <div>Joined: {new Date(user.created_at).toLocaleDateString()}</div>
+              </div>
+            </div>
+          ))}
+          {users.length === 0 && (
+            <div className="rounded-2xl border border-border bg-surface-strong p-4 text-center text-sm text-muted">
+              No referred users yet.
+            </div>
+          )}
+        </div>
+
+        <div className="hidden md:block">
+          <table>
+            <thead>
               <tr>
-                <td colSpan="4" style={{ textAlign: 'center' }}>No referred users yet.</td>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Joined</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td>{user.name || 'Unnamed User'}</td>
+                  <td style={{ color: 'var(--text-secondary)' }}>{user.email}</td>
+                  <td>{user.role}</td>
+                  <td>{new Date(user.created_at).toLocaleDateString()}</td>
+                </tr>
+              ))}
+              {users.length === 0 && (
+                <tr>
+                  <td colSpan="4" style={{ textAlign: 'center' }}>No referred users yet.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
         <PaginationControls
           pagination={pagination}
           onPageChange={setPage}

@@ -11,14 +11,18 @@ export default function PaginationControls({
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginTop: '1rem', flexWrap: 'wrap' }}>
-      <div style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+    <div className="mt-4 flex flex-col gap-4 rounded-2xl border border-border bg-surface/60 p-4 md:flex-row md:items-center md:justify-between">
+      <div className="text-sm text-muted">
         Page {pagination.page} of {pagination.totalPages} · {pagination.totalItems} items
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-        <label style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>Rows:</label>
-        <select className="input" style={{ width: 'auto', padding: '0.5rem 0.75rem' }} value={pagination.limit} onChange={(event) => onLimitChange?.(Number(event.target.value))}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
+        <label className="text-sm text-muted">Rows:</label>
+        <select
+          className="input w-full sm:min-w-24 sm:w-auto"
+          value={pagination.limit}
+          onChange={(event) => onLimitChange?.(Number(event.target.value))}
+        >
           {limitOptions.map((option) => (
             <option key={option} value={option}>
               {option}
@@ -47,4 +51,3 @@ export default function PaginationControls({
     </div>
   );
 }
-

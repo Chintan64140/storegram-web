@@ -19,8 +19,8 @@ const buildLinePoints = (data, key, width, height, padding, maxValue) => {
 };
 
 export default function PublisherLineChart({ data = [] }) {
-  const width = 960;
-  const height = 280;
+  const width = Math.max(560, data.length * 36);
+  const height = 240;
   const padding = 28;
   const maxValue = Math.max(
     1,
@@ -31,16 +31,38 @@ export default function PublisherLineChart({ data = [] }) {
     <div>
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
         {CHART_SERIES.map((series) => (
-          <div key={series.key} style={{ display: 'inline-flex', alignItems: 'center', gap: '0.45rem', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
-            <span style={{ width: '10px', height: '10px', borderRadius: '999px', backgroundColor: series.color, display: 'inline-block' }} />
+          <div
+            key={series.key}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.45rem',
+              color: 'var(--text-secondary)',
+              fontSize: '0.82rem',
+            }}
+          >
+            <span
+              style={{
+                width: '10px',
+                height: '10px',
+                borderRadius: '999px',
+                backgroundColor: series.color,
+                display: 'inline-block',
+              }}
+            />
             {series.label}
           </div>
         ))}
       </div>
 
       <div style={{ width: '100%', overflowX: 'auto' }}>
-        <div style={{ minWidth: '760px' }}>
-          <svg viewBox={`0 0 ${width} ${height}`} style={{ width: '100%', height: '280px', display: 'block' }} role="img" aria-label="Monthly analytics chart">
+        <div style={{ minWidth: `${width}px` }}>
+          <svg
+            viewBox={`0 0 ${width} ${height}`}
+            style={{ width: '100%', height: '240px', display: 'block' }}
+            role="img"
+            aria-label="Monthly analytics chart"
+          >
             {[0, 1, 2, 3, 4].map((tick) => {
               const y = padding + ((height - (padding * 2)) * tick) / 4;
               const tickValue = ((maxValue * (4 - tick)) / 4).toFixed(maxValue > 10 ? 0 : 2);
@@ -55,7 +77,7 @@ export default function PublisherLineChart({ data = [] }) {
                     stroke="rgba(255,255,255,0.08)"
                     strokeDasharray="4 6"
                   />
-                  <text x={10} y={y + 4} fill="rgba(255,255,255,0.45)" fontSize="11">
+                  <text x={10} y={y + 4} fill="rgba(255,255,255,0.45)" fontSize="10">
                     {tickValue}
                   </text>
                 </g>
@@ -71,7 +93,7 @@ export default function PublisherLineChart({ data = [] }) {
                   y={height - 6}
                   textAnchor="middle"
                   fill="rgba(255,255,255,0.45)"
-                  fontSize="11"
+                  fontSize="10"
                 >
                   {item.label}
                 </text>

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { clearPublisherSession, getPublisherToken } from './auth';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://storegram-backend-39ki.onrender.com';
 
 const api = axios.create({
   baseURL: API_URL,

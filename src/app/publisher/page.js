@@ -48,26 +48,17 @@ const formatMetricValue = (value, options = {}) => {
 function DashboardSection({ title, description, action, children }) {
   return (
     <section
-      className="card"
+      className="card p-4 sm:p-6"
       style={{
         background: 'linear-gradient(180deg, rgba(18,18,18,0.98) 0%, rgba(11,11,11,0.98) 100%)',
         borderColor: 'rgba(255,255,255,0.09)',
         boxShadow: '0 24px 80px rgba(0,0,0,0.35)',
       }}
     >
-      <div
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          gap: '1rem',
-          marginBottom: '1.25rem',
-          flexWrap: 'wrap',
-        }}
-      >
+      <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
         <div>
-          <h2 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.35rem' }}>{title}</h2>
-          <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>{description}</p>
+          <h2 className="mb-1 text-base font-bold sm:text-lg">{title}</h2>
+          <p className="text-sm text-muted">{description}</p>
         </div>
         {action}
       </div>
@@ -79,17 +70,8 @@ function DashboardSection({ title, description, action, children }) {
 function StatBadge({ label, value, icon: Icon, color }) {
   return (
     <div
-      style={{
-        minWidth: '120px',
-        flex: '1 1 120px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.85rem',
-        padding: '0.95rem 1rem',
-        borderRadius: '14px',
-        background: 'rgba(255,255,255,0.02)',
-        border: '1px solid rgba(255,255,255,0.06)',
-      }}
+      className="flex min-w-0 items-center gap-4 rounded-2xl border border-white/[0.06] bg-white/[0.03] p-4"
+      style={{ minHeight: '88px' }}
     >
       <div
         style={{
@@ -107,9 +89,9 @@ function StatBadge({ label, value, icon: Icon, color }) {
       >
         <Icon size={18} color={color} />
       </div>
-      <div>
-        <div style={{ color: 'var(--text-secondary)', fontSize: '0.76rem', marginBottom: '0.2rem' }}>{label}</div>
-        <div style={{ fontWeight: 700, fontSize: '1rem' }}>{value}</div>
+      <div className="min-w-0">
+        <div className="mb-1 text-xs text-muted">{label}</div>
+        <div className="break-words text-base font-bold sm:text-lg">{value}</div>
       </div>
     </div>
   );
@@ -118,16 +100,9 @@ function StatBadge({ label, value, icon: Icon, color }) {
 function MetricCard({ label, value, icon: Icon, color }) {
   return (
     <div
+      className="flex min-w-0 items-center gap-4 rounded-2xl border border-white/[0.06] p-4"
       style={{
-        flex: '1 1 180px',
-        minWidth: '180px',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
-        padding: '1rem 1.1rem',
-        borderRadius: '16px',
         background: 'linear-gradient(180deg, rgba(255,255,255,0.025) 0%, rgba(255,255,255,0.01) 100%)',
-        border: '1px solid rgba(255,255,255,0.06)',
       }}
     >
       <div
@@ -145,9 +120,9 @@ function MetricCard({ label, value, icon: Icon, color }) {
       >
         <Icon size={26} color={color} />
       </div>
-      <div>
-        <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem', marginBottom: '0.25rem' }}>{label}</div>
-        <div style={{ fontSize: '1.7rem', fontWeight: 800, lineHeight: 1 }}>{value}</div>
+      <div className="min-w-0">
+        <div className="mb-1 text-xs text-muted sm:text-sm">{label}</div>
+        <div className="break-words text-2xl font-extrabold leading-tight sm:text-3xl">{value}</div>
       </div>
     </div>
   );
@@ -219,13 +194,21 @@ export default function PublisherDashboard() {
   const earningsModel = data.earningsModel || {};
 
   return (
-    <div className="animate-fade-in" style={{ display: 'grid', gap: '1.2rem' }}>
+    <div className="animate-fade-in grid gap-5 ">
       <div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.55rem', marginBottom: '0.25rem' }}>
-          <span style={{ width: '9px', height: '9px', borderRadius: '999px', backgroundColor: 'var(--success)', boxShadow: '0 0 12px rgba(0, 204, 102, 0.8)' }} />
-          <h1 style={{ fontSize: '1.9rem', fontWeight: 800 }}>Analytics</h1>
+        <div className="mb-1 flex items-center gap-2">
+          <span
+            style={{
+              width: '9px',
+              height: '9px',
+              borderRadius: '999px',
+              backgroundColor: 'var(--success)',
+              boxShadow: '0 0 12px rgba(0, 204, 102, 0.8)',
+            }}
+          />
+          <h1 className="text-3xl font-extrabold sm:text-4xl">Analytics</h1>
         </div>
-        <p style={{ color: 'var(--text-secondary)' }}>
+        <p className="max-w-3xl text-sm text-muted sm:text-base">
           Track your revenue, views, uploads, and referral growth with the live publisher APIs.
         </p>
       </div>
@@ -247,12 +230,16 @@ export default function PublisherDashboard() {
         title="Revenue Overview"
         description="Your overall paid, pending, and available revenue breakdown."
       >
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.85rem' }}>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {OVERVIEW_ITEMS.map((item) => (
             <StatBadge
               key={item.key}
               label={item.label}
-              value={item.isCurrency === false ? formatMetricValue(revenueOverview[item.key]) : formatMoney(revenueOverview[item.key])}
+              value={
+                item.isCurrency === false
+                  ? formatMetricValue(revenueOverview[item.key])
+                  : formatMoney(revenueOverview[item.key])
+              }
               icon={item.icon}
               color={item.color}
             />
@@ -264,7 +251,32 @@ export default function PublisherDashboard() {
         title="How View Earnings Work"
         description="This explanation is pulled from the backend earning rules, so it matches how valid views are counted today."
       >
-        <div style={{ overflowX: 'auto', marginBottom: '1rem' }}>
+        <div className="mb-4 grid gap-3 md:hidden">
+          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4">
+            <div className="text-xs uppercase tracking-[0.16em] text-muted">Valid View Rate</div>
+            <div className="mt-2 text-lg font-bold">{formatMoney(earningsModel.amountPerValidView)}</div>
+            <p className="mt-2 text-sm text-muted">
+              Each approved view credit recorded through the tracking APIs.
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4">
+            <div className="text-xs uppercase tracking-[0.16em] text-muted">Watch Threshold</div>
+            <div className="mt-2 text-lg font-bold">{earningsModel.maxThresholdSeconds || 20}s cap</div>
+            <p className="mt-2 text-sm text-muted">
+              {earningsModel.thresholdRule ||
+                'A view counts after the minimum tracked watch duration is met.'}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4">
+            <div className="text-xs uppercase tracking-[0.16em] text-muted">Totals Shown</div>
+            <div className="mt-2 text-lg font-bold">Wallet + Transactions</div>
+            <p className="mt-2 text-sm text-muted">
+              Revenue cards blend file earnings, withdrawal status, and current wallet balance.
+            </p>
+          </div>
+        </div>
+
+        <div className="table-container mb-4 hidden md:block">
           <table>
             <thead>
               <tr>
@@ -282,7 +294,10 @@ export default function PublisherDashboard() {
               <tr>
                 <td>Watch Threshold</td>
                 <td>{earningsModel.maxThresholdSeconds || 20}s cap</td>
-                <td>{earningsModel.thresholdRule || 'A view counts after the minimum tracked watch duration is met.'}</td>
+                <td>
+                  {earningsModel.thresholdRule ||
+                    'A view counts after the minimum tracked watch duration is met.'}
+                </td>
               </tr>
               <tr>
                 <td>Totals Shown</td>
@@ -293,37 +308,29 @@ export default function PublisherDashboard() {
           </table>
         </div>
 
-        <div
-          style={{
-            padding: '1rem 1.1rem',
-            borderRadius: '14px',
-            border: '1px solid rgba(255,255,255,0.07)',
-            background: 'rgba(255,255,255,0.02)',
-            color: 'var(--text-secondary)',
-            fontSize: '0.88rem',
-          }}
-        >
-          Example: 125 valid views in a day at {formatMoney(earningsModel.amountPerValidView)} per counted view results in {formatMoney(Number(earningsModel.amountPerValidView || 0) * 125)} credited earnings.
+        <div className="rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-4 text-sm leading-7 text-muted">
+          Example: 125 valid views in a day at {formatMoney(earningsModel.amountPerValidView)} per
+          counted view results in{' '}
+          {formatMoney(Number(earningsModel.amountPerValidView || 0) * 125)} credited earnings.
         </div>
       </DashboardSection>
 
       <DashboardSection
         title="Daily Analytics"
         description="Your daily views, uploads, and earnings breakdown."
-        action={(
-          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
-            Select Date
+        action={
+          <label className="flex w-full flex-col gap-2 text-sm text-muted sm:w-auto">
+            <span>Select Date</span>
             <input
               type="date"
-              className="input"
+              className="input w-full sm:min-w-40"
               value={selectedDate}
               onChange={(event) => setSelectedDate(event.target.value)}
-              style={{ width: 'auto', minWidth: '150px', padding: '0.6rem 0.75rem' }}
             />
           </label>
-        )}
+        }
       >
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+        <div className="mb-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {DAILY_ITEMS.map((item) => (
             <MetricCard
               key={item.key}
@@ -335,15 +342,24 @@ export default function PublisherDashboard() {
           ))}
         </div>
 
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', color: 'var(--text-secondary)', fontSize: '0.85rem' }}>
-          <span className="card" style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(255,255,255,0.015)' }}>
-            Valid Views: <strong style={{ color: 'var(--text-primary)' }}>{Number(dailyAnalytics.validViews || 0).toLocaleString()}</strong>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          <span className="rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-4">
+            <span className="text-sm text-muted">Valid Views: </span>
+            <strong className="text-foreground">
+              {Number(dailyAnalytics.validViews || 0).toLocaleString()}
+            </strong>
           </span>
-          <span className="card" style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(255,255,255,0.015)' }}>
-            Total Files: <strong style={{ color: 'var(--text-primary)' }}>{Number(data.totalFiles || 0).toLocaleString()}</strong>
+          <span className="rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-4">
+            <span className="text-sm text-muted">Total Files: </span>
+            <strong className="text-foreground">
+              {Number(data.totalFiles || 0).toLocaleString()}
+            </strong>
           </span>
-          <span className="card" style={{ padding: '0.75rem 1rem', backgroundColor: 'rgba(255,255,255,0.015)' }}>
-            Referred Users: <strong style={{ color: 'var(--text-primary)' }}>{Number(data.totalReferredUsers || 0).toLocaleString()}</strong>
+          <span className="rounded-2xl border border-white/[0.07] bg-white/[0.02] px-4 py-4">
+            <span className="text-sm text-muted">Referred Users: </span>
+            <strong className="text-foreground">
+              {Number(data.totalReferredUsers || 0).toLocaleString()}
+            </strong>
           </span>
         </div>
       </DashboardSection>
@@ -351,20 +367,19 @@ export default function PublisherDashboard() {
       <DashboardSection
         title="Monthly Analytics"
         description="Your monthly views, uploads, and earnings overview."
-        action={(
-          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
-            Select Month
+        action={
+          <label className="flex w-full flex-col gap-2 text-sm text-muted sm:w-auto">
+            <span>Select Month</span>
             <input
               type="month"
-              className="input"
+              className="input w-full sm:min-w-36"
               value={selectedMonth}
               onChange={(event) => setSelectedMonth(event.target.value)}
-              style={{ width: 'auto', minWidth: '128px', padding: '0.6rem 0.75rem' }}
             />
           </label>
-        )}
+        }
       >
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.2rem' }}>
+        <div className="mb-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           {MONTHLY_ITEMS.map((item) => (
             <MetricCard
               key={item.key}
@@ -377,17 +392,17 @@ export default function PublisherDashboard() {
         </div>
 
         <div
+          className="rounded-2xl border border-white/[0.07] p-3 sm:p-4"
           style={{
-            borderRadius: '16px',
-            border: '1px solid rgba(255,255,255,0.07)',
-            background: 'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.01) 100%)',
-            padding: '1rem',
+            background:
+              'linear-gradient(180deg, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.01) 100%)',
           }}
         >
-          <div style={{ marginBottom: '0.85rem' }}>
-            <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.25rem' }}>Monthly Activity Chart</h3>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.82rem' }}>
-              Daily breakdown of views, files, and approved positive earnings for {monthlyAnalytics.month || selectedMonth}.
+          <div className="mb-4">
+            <h3 className="mb-1 text-base font-bold">Monthly Activity Chart</h3>
+            <p className="text-sm text-muted">
+              Daily breakdown of views, files, and approved positive earnings for{' '}
+              {monthlyAnalytics.month || selectedMonth}.
             </p>
           </div>
           <PublisherLineChart data={monthlyAnalytics.chart || []} />

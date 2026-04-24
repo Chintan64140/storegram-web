@@ -45,7 +45,8 @@ const getPreviewType = (file) => {
   return 'file';
 };
 
-const formatSizeInMb = (sizeInBytes) => `${(Number(sizeInBytes || 0) / (1024 * 1024)).toFixed(2)} MB`;
+const formatSizeInMb = (sizeInBytes) =>
+  `${(Number(sizeInBytes || 0) / (1024 * 1024)).toFixed(2)} MB`;
 
 function PreviewModal({ file, onClose }) {
   useEffect(() => {
@@ -70,62 +71,25 @@ function PreviewModal({ file, onClose }) {
 
   const previewType = getPreviewType(file);
 
-  const mediaContainerStyle = {
-    borderRadius: '16px',
-    border: '1px solid rgba(255,255,255,0.08)',
-    background: 'rgba(255,255,255,0.03)',
-    overflow: 'hidden',
-    minHeight: '340px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
-
   return (
     <div
       onClick={onClose}
-      style={{
-        position: 'fixed',
-        inset: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.72)',
-        backdropFilter: 'blur(6px)',
-        zIndex: 90,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '1.5rem',
-      }}
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-black/75 p-3 backdrop-blur-sm sm:p-6"
     >
       <div
-        className="card"
+        className="card max-h-[90vh] w-full max-w-5xl overflow-y-auto border-white/10 bg-[linear-gradient(180deg,rgba(16,16,16,0.98)_0%,rgba(8,8,8,0.98)_100%)] p-4 shadow-[0_30px_120px_rgba(0,0,0,0.45)] sm:p-6"
         onClick={(event) => event.stopPropagation()}
-        style={{
-          width: 'min(1080px, 100%)',
-          maxHeight: '90vh',
-          overflowY: 'auto',
-          background: 'linear-gradient(180deg, rgba(16,16,16,0.98) 0%, rgba(8,8,8,0.98) 100%)',
-          borderColor: 'rgba(255,255,255,0.09)',
-          boxShadow: '0 30px 120px rgba(0,0,0,0.45)',
-        }}
       >
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'flex-start',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            marginBottom: '1.25rem',
-          }}
-        >
-          <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem', color: 'var(--accent-primary)' }}>
+        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="min-w-0">
+            <div className="mb-2 inline-flex items-center gap-2 text-accent">
               <PlaySquare size={16} />
-              <span style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
-                File Preview
-              </span>
+              <span className="text-xs font-bold uppercase tracking-[0.12em]">File Preview</span>
             </div>
-            <h2 style={{ fontSize: '1.4rem', fontWeight: 800, marginBottom: '0.25rem' }}>{file.title || 'Untitled File'}</h2>
-            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
+            <h2 className="break-words text-xl font-extrabold sm:text-2xl">
+              {file.title || 'Untitled File'}
+            </h2>
+            <p className="mt-2 text-sm text-muted sm:text-base">
               {file.description || 'No description added for this file yet.'}
             </p>
           </div>
@@ -133,26 +97,20 @@ function PreviewModal({ file, onClose }) {
           <button
             onClick={onClose}
             aria-label="Close preview"
-            style={{
-              padding: '0.65rem',
-              borderRadius: '999px',
-              backgroundColor: 'rgba(255,255,255,0.05)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              color: 'var(--text-secondary)',
-            }}
+            className="self-end rounded-full border border-white/10 bg-white/5 p-2 text-muted transition hover:border-accent hover:text-foreground sm:self-start"
           >
             <X size={18} />
           </button>
         </div>
 
-        <div style={mediaContainerStyle}>
+        <div className="flex min-h-[220px] items-center justify-center overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] sm:min-h-[340px]">
           {previewType === 'video' && (
             <video
               src={file.file_url}
               controls
               playsInline
               preload="metadata"
-              style={{ width: '100%', maxHeight: '68vh', backgroundColor: '#000' }}
+              className="max-h-[62vh] w-full bg-black sm:max-h-[68vh]"
             />
           )}
 
@@ -162,7 +120,7 @@ function PreviewModal({ file, onClose }) {
               <img
                 src={file.file_url}
                 alt={file.title || 'Uploaded file preview'}
-                style={{ maxWidth: '100%', maxHeight: '68vh', objectFit: 'contain', display: 'block' }}
+                className="block max-h-[62vh] max-w-full object-contain sm:max-h-[68vh]"
               />
             </>
           )}
@@ -171,22 +129,33 @@ function PreviewModal({ file, onClose }) {
             <iframe
               src={file.file_url}
               title={file.title || 'Document preview'}
-              style={{ width: '100%', height: '68vh', border: 0, backgroundColor: '#111' }}
+              className="h-[62vh] w-full border-0 bg-[#111] sm:h-[68vh]"
             />
           )}
 
           {previewType === 'file' && (
-            <div style={{ padding: '2rem', textAlign: 'center' }}>
-              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '0.6rem' }}>Preview not available inline</h3>
-              <p style={{ color: 'var(--text-secondary)', maxWidth: '460px', margin: '0 auto 1rem' }}>
-                This file type does not have an embedded preview yet, but you can still open it in a new tab or download it directly.
+            <div className="p-6 text-center sm:p-8">
+              <h3 className="mb-3 text-lg font-bold">Preview not available inline</h3>
+              <p className="mx-auto mb-5 max-w-md text-sm text-muted sm:text-base">
+                This file type does not have an embedded preview yet, but you can still open it in
+                a new tab or download it directly.
               </p>
-              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <a href={file.file_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
+              <div className="flex flex-col justify-center gap-3 sm:flex-row">
+                <a
+                  href={file.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-primary w-full sm:w-auto"
+                >
                   <ExternalLink size={16} />
                   Open File
                 </a>
-                <a href={file.file_url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
+                <a
+                  href={file.file_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn btn-secondary w-full sm:w-auto"
+                >
                   <Download size={16} />
                   Download
                 </a>
@@ -195,35 +164,139 @@ function PreviewModal({ file, onClose }) {
           )}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.9rem', marginTop: '1.25rem' }}>
-          <div className="card" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)' }}>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginBottom: '0.35rem' }}>Short ID</div>
-            <div style={{ fontWeight: 700, color: 'var(--accent-primary)' }}>{file.short_id || 'N/A'}</div>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <div className="rounded-2xl border border-border bg-white/[0.03] p-4">
+            <div className="mb-1 text-xs text-muted">Short ID</div>
+            <div className="break-all font-bold text-accent">{file.short_id || 'N/A'}</div>
           </div>
-          <div className="card" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)' }}>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginBottom: '0.35rem' }}>Size</div>
-            <div style={{ fontWeight: 700 }}>{formatSizeInMb(file.size)}</div>
+          <div className="rounded-2xl border border-border bg-white/[0.03] p-4">
+            <div className="mb-1 text-xs text-muted">Size</div>
+            <div className="font-bold">{formatSizeInMb(file.size)}</div>
           </div>
-          <div className="card" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)' }}>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginBottom: '0.35rem' }}>Views</div>
-            <div style={{ fontWeight: 700 }}>{Number(file.total_views || 0).toLocaleString()}</div>
+          <div className="rounded-2xl border border-border bg-white/[0.03] p-4">
+            <div className="mb-1 text-xs text-muted">Views</div>
+            <div className="font-bold">{Number(file.total_views || 0).toLocaleString()}</div>
           </div>
-          <div className="card" style={{ padding: '1rem', backgroundColor: 'rgba(255,255,255,0.02)' }}>
-            <div style={{ color: 'var(--text-secondary)', fontSize: '0.78rem', marginBottom: '0.35rem' }}>Earnings</div>
-            <div style={{ fontWeight: 700, color: 'var(--success)' }}>${Number(file.total_earnings || 0).toFixed(2)}</div>
+          <div className="rounded-2xl border border-border bg-white/[0.03] p-4">
+            <div className="mb-1 text-xs text-muted">Earnings</div>
+            <div className="font-bold text-success">
+              ${Number(file.total_earnings || 0).toFixed(2)}
+            </div>
           </div>
         </div>
 
-        <div style={{ display: 'flex', justifyContent: 'space-between', gap: '0.75rem', flexWrap: 'wrap', marginTop: '1.25rem' }}>
-          <a href={file.file_url} target="_blank" rel="noopener noreferrer" className="btn btn-secondary">
+        <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-between">
+          <a
+            href={file.file_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="btn btn-secondary w-full sm:w-auto"
+          >
             <ExternalLink size={16} />
             Open in New Tab
           </a>
-          <button onClick={onClose} className="btn btn-primary">
+          <button onClick={onClose} className="btn btn-primary w-full sm:w-auto">
             Close Preview
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+function FileActionButtons({
+  file,
+  editingId,
+  onPreview,
+  onSave,
+  onCancel,
+  onEdit,
+  onCopyLink,
+  onDelete,
+}) {
+  const isEditing = editingId === file.id;
+
+  const buttonClassName =
+    'inline-flex h-10 items-center justify-center rounded-xl border px-3 text-sm font-medium transition';
+
+  return (
+    <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+      <button
+        type="button"
+        onClick={() => onPreview(file)}
+        className={`${buttonClassName} border-accent/30 bg-accent/10 text-white hover:bg-accent/20`}
+        title="Preview"
+      >
+        <Eye size={16} />
+      </button>
+
+      {isEditing ? (
+        <>
+          <button
+            type="button"
+            onClick={() => onSave(file.id)}
+            className={`${buttonClassName} border-success/30 bg-success/10 text-success hover:bg-success/20`}
+            title="Save"
+          >
+            <Save size={16} />
+          </button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className={`${buttonClassName} border-border bg-surface-strong text-muted hover:text-foreground`}
+            title="Cancel"
+          >
+            <XCircle size={16} />
+          </button>
+        </>
+      ) : (
+        <button
+          type="button"
+          onClick={() => onEdit(file)}
+          className={`${buttonClassName} border-border bg-surface-strong text-muted hover:text-foreground`}
+          title="Edit"
+        >
+          <Pencil size={16} />
+        </button>
+      )}
+
+      <button
+        type="button"
+        onClick={() => void onCopyLink(file.short_id)}
+        className={`${buttonClassName} border-accent/30 bg-accent/10 text-accent hover:bg-accent/20`}
+        title="Copy Link"
+      >
+        <LinkIcon size={16} />
+      </button>
+
+      <a
+        href={file.file_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`${buttonClassName} border-border bg-surface-strong text-muted hover:text-foreground`}
+        title="Open File"
+      >
+        <ExternalLink size={16} />
+      </a>
+
+      <a
+        href={file.file_url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`${buttonClassName} border-border bg-surface-strong text-muted hover:text-foreground`}
+        title="Download"
+      >
+        <Download size={16} />
+      </a>
+
+      <button
+        type="button"
+        onClick={() => void onDelete(file.id)}
+        className={`${buttonClassName} border-danger/30 bg-danger/10 text-danger hover:bg-danger/20`}
+        title="Delete"
+      >
+        <Trash size={16} />
+      </button>
     </div>
   );
 }
@@ -289,7 +362,11 @@ export default function FileManager() {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this file? This will permanently remove it from your storage and the cloud.')) {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete this file? This will permanently remove it from your storage and the cloud.'
+      )
+    ) {
       return;
     }
 
@@ -351,13 +428,13 @@ export default function FileManager() {
   }
 
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in space-y-6">
       {previewFile && <PreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', marginBottom: '2rem' }}>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 'bold', marginBottom: '0.35rem' }}>File Manager</h1>
-          <p style={{ color: 'var(--text-secondary)' }}>
+          <h1 className="text-3xl font-extrabold sm:text-4xl">File Manager</h1>
+          <p className="mt-2 max-w-3xl text-sm text-muted sm:text-base">
             Preview videos, images, and supported documents directly from your uploaded file list.
           </p>
         </div>
@@ -367,7 +444,6 @@ export default function FileManager() {
         <div
           className="card"
           style={{
-            marginBottom: '1.5rem',
             borderColor: error ? 'rgba(255, 77, 77, 0.3)' : 'rgba(0, 204, 102, 0.3)',
             color: error ? 'var(--danger)' : 'var(--success)',
           }}
@@ -376,115 +452,211 @@ export default function FileManager() {
         </div>
       )}
 
-      <div className="card table-container">
-        <table>
-          <thead>
-            <tr>
-              <th>File Name</th>
-              <th>Description</th>
-              <th>Type</th>
-              <th>Short ID</th>
-              <th>Size (MB)</th>
-              <th>Views</th>
-              <th>Earnings ($)</th>
-              <th>Upload Date</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {files.map((file) => (
-              <tr key={file.id}>
-                <td style={{ fontWeight: 500, color: 'var(--text-primary)', minWidth: '220px' }}>
-                  {editingId === file.id ? (
-                    <input
-                      type="text"
-                      className="input"
-                      value={editValues.title}
-                      onChange={(event) => setEditValues((current) => ({ ...current, title: event.target.value }))}
-                    />
-                  ) : (
-                    file.title || 'Untitled'
-                  )}
-                </td>
-                <td style={{ color: 'var(--text-secondary)', minWidth: '220px' }}>
-                  {editingId === file.id ? (
-                    <input
-                      type="text"
-                      className="input"
-                      value={editValues.description}
-                      onChange={(event) => setEditValues((current) => ({ ...current, description: event.target.value }))}
-                    />
-                  ) : (
-                    file.description || 'No description'
-                  )}
-                </td>
-                <td style={{ color: 'var(--text-secondary)', textTransform: 'capitalize' }}>
-                  {getPreviewType(file)}
-                </td>
-                <td style={{ color: 'var(--accent-primary)' }}>{file.short_id}</td>
-                <td style={{ color: 'var(--text-secondary)' }}>{formatSizeInMb(file.size).replace(' MB', '')}</td>
-                <td style={{ color: 'var(--text-secondary)' }}>{Number(file.total_views || 0).toLocaleString()}</td>
-                <td style={{ color: 'var(--success)', fontWeight: 'bold' }}>{Number(file.total_earnings || 0).toFixed(2)}</td>
-                <td style={{ color: 'var(--text-secondary)' }}>{new Date(file.created_at).toLocaleDateString()}</td>
-                <td>
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                    <button
-                      onClick={() => setPreviewFile(file)}
-                      style={{ padding: '0.5rem', color: '#fff', backgroundColor: 'rgba(0, 160, 254, 0.16)', borderRadius: '4px', border: '1px solid rgba(0, 160, 254, 0.35)' }}
-                      title="Preview"
-                    >
-                      <Eye size={16} />
-                    </button>
+      <div className="grid gap-4 md:hidden">
+        {files.map((file) => {
+          const isEditing = editingId === file.id;
 
-                    {editingId === file.id ? (
-                      <>
-                        <button onClick={() => saveFile(file.id)} style={{ padding: '0.5rem', color: 'var(--success)', backgroundColor: 'rgba(0, 204, 102, 0.1)', borderRadius: '4px' }} title="Save">
-                          <Save size={16} />
-                        </button>
-                        <button onClick={cancelEditing} style={{ padding: '0.5rem', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-tertiary)', borderRadius: '4px' }} title="Cancel">
-                          <XCircle size={16} />
-                        </button>
-                      </>
-                    ) : (
-                      <button onClick={() => startEditing(file)} style={{ padding: '0.5rem', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-tertiary)', borderRadius: '4px' }} title="Edit">
-                        <Pencil size={16} />
-                      </button>
-                    )}
-
-                    <button onClick={() => void copyLink(file.short_id)} style={{ padding: '0.5rem', color: 'var(--accent-primary)', backgroundColor: 'var(--accent-light)', borderRadius: '4px' }} title="Copy Link">
-                      <LinkIcon size={16} />
-                    </button>
-
-                    <a href={file.file_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '0.5rem', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-tertiary)', borderRadius: '4px' }} title="Open File">
-                      <ExternalLink size={16} />
-                    </a>
-
-                    <a href={file.file_url} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-block', padding: '0.5rem', color: 'var(--text-secondary)', backgroundColor: 'var(--bg-tertiary)', borderRadius: '4px' }} title="Download">
-                      <Download size={16} />
-                    </a>
-
-                    <button onClick={() => void handleDelete(file.id)} style={{ padding: '0.5rem', color: 'var(--danger)', backgroundColor: 'rgba(255, 77, 77, 0.1)', borderRadius: '4px' }} title="Delete">
-                      <Trash size={16} />
-                    </button>
+          return (
+            <div key={file.id} className="card p-4">
+              <div className="flex flex-col gap-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <div className="text-xs uppercase tracking-[0.18em] text-muted">
+                      {getPreviewType(file)}
+                    </div>
+                    <h2 className="mt-1 break-words text-lg font-bold">
+                      {isEditing ? 'Editing file' : file.title || 'Untitled'}
+                    </h2>
                   </div>
-                </td>
-              </tr>
-            ))}
-            {files.length === 0 && (
+                  <div className="rounded-full bg-accent/10 px-3 py-1 text-xs font-semibold text-accent">
+                    {file.short_id || 'N/A'}
+                  </div>
+                </div>
+
+                {isEditing ? (
+                  <div className="grid gap-3">
+                    <div className="input-group">
+                      <label>File Name</label>
+                      <input
+                        type="text"
+                        className="input"
+                        value={editValues.title}
+                        onChange={(event) =>
+                          setEditValues((current) => ({ ...current, title: event.target.value }))
+                        }
+                      />
+                    </div>
+                    <div className="input-group">
+                      <label>Description</label>
+                      <input
+                        type="text"
+                        className="input"
+                        value={editValues.description}
+                        onChange={(event) =>
+                          setEditValues((current) => ({
+                            ...current,
+                            description: event.target.value,
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted">
+                    {file.description || 'No description added for this file.'}
+                  </p>
+                )}
+
+                <div className="grid grid-cols-2 gap-3 rounded-2xl border border-border bg-surface-strong/70 p-4">
+                  <div>
+                    <div className="text-xs text-muted">Size</div>
+                    <div className="mt-1 text-sm font-semibold">{formatSizeInMb(file.size)}</div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted">Views</div>
+                    <div className="mt-1 text-sm font-semibold">
+                      {Number(file.total_views || 0).toLocaleString()}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted">Earnings</div>
+                    <div className="mt-1 text-sm font-semibold text-success">
+                      ${Number(file.total_earnings || 0).toFixed(2)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-muted">Uploaded</div>
+                    <div className="mt-1 text-sm font-semibold">
+                      {new Date(file.created_at).toLocaleDateString()}
+                    </div>
+                  </div>
+                </div>
+
+                <FileActionButtons
+                  file={file}
+                  editingId={editingId}
+                  onPreview={setPreviewFile}
+                  onSave={saveFile}
+                  onCancel={cancelEditing}
+                  onEdit={startEditing}
+                  onCopyLink={copyLink}
+                  onDelete={handleDelete}
+                />
+              </div>
+            </div>
+          );
+        })}
+
+        {files.length === 0 && (
+          <div className="card p-8 text-center text-sm text-muted">No files found.</div>
+        )}
+
+        <div className="card p-4">
+          <PaginationControls
+            pagination={pagination}
+            onPageChange={setPage}
+            onLimitChange={(nextLimit) => {
+              setLimit(nextLimit);
+              setPage(1);
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="hidden md:block">
+        <div className="card table-container">
+          <table>
+            <thead>
               <tr>
-                <td colSpan="9" style={{ textAlign: 'center' }}>No files found.</td>
+                <th>File Name</th>
+                <th>Description</th>
+                <th>Type</th>
+                <th>Short ID</th>
+                <th>Size (MB)</th>
+                <th>Views</th>
+                <th>Earnings ($)</th>
+                <th>Upload Date</th>
+                <th>Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
-        <PaginationControls
-          pagination={pagination}
-          onPageChange={setPage}
-          onLimitChange={(nextLimit) => {
-            setLimit(nextLimit);
-            setPage(1);
-          }}
-        />
+            </thead>
+            <tbody>
+              {files.map((file) => (
+                <tr key={file.id}>
+                  <td className="min-w-[220px] font-medium text-foreground">
+                    {editingId === file.id ? (
+                      <input
+                        type="text"
+                        className="input"
+                        value={editValues.title}
+                        onChange={(event) =>
+                          setEditValues((current) => ({ ...current, title: event.target.value }))
+                        }
+                      />
+                    ) : (
+                      file.title || 'Untitled'
+                    )}
+                  </td>
+                  <td className="min-w-[220px] text-muted">
+                    {editingId === file.id ? (
+                      <input
+                        type="text"
+                        className="input"
+                        value={editValues.description}
+                        onChange={(event) =>
+                          setEditValues((current) => ({
+                            ...current,
+                            description: event.target.value,
+                          }))
+                        }
+                      />
+                    ) : (
+                      file.description || 'No description'
+                    )}
+                  </td>
+                  <td className="text-muted capitalize">{getPreviewType(file)}</td>
+                  <td className="text-accent">{file.short_id}</td>
+                  <td className="text-muted">{formatSizeInMb(file.size).replace(' MB', '')}</td>
+                  <td className="text-muted">
+                    {Number(file.total_views || 0).toLocaleString()}
+                  </td>
+                  <td className="font-bold text-success">
+                    {Number(file.total_earnings || 0).toFixed(2)}
+                  </td>
+                  <td className="text-muted">
+                    {new Date(file.created_at).toLocaleDateString()}
+                  </td>
+                  <td>
+                    <FileActionButtons
+                      file={file}
+                      editingId={editingId}
+                      onPreview={setPreviewFile}
+                      onSave={saveFile}
+                      onCancel={cancelEditing}
+                      onEdit={startEditing}
+                      onCopyLink={copyLink}
+                      onDelete={handleDelete}
+                    />
+                  </td>
+                </tr>
+              ))}
+              {files.length === 0 && (
+                <tr>
+                  <td colSpan="9" className="text-center">
+                    No files found.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          <PaginationControls
+            pagination={pagination}
+            onPageChange={setPage}
+            onLimitChange={(nextLimit) => {
+              setLimit(nextLimit);
+              setPage(1);
+            }}
+          />
+        </div>
       </div>
     </div>
   );
