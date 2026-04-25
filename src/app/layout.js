@@ -7,6 +7,7 @@ import { Suspense } from "react";
 import Script from "next/script";
 import "./globals.css";
 import ScrollHandler from "@/components/Scroll-controller";
+import Loader from "@/components/Loader";
 
 const themeInitializationScript = `
   (() => {
@@ -33,7 +34,7 @@ export default function RootLayout({ children }) {
         <Script id="storegram-theme-init" strategy="beforeInteractive">
           {themeInitializationScript}
         </Script>
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<Loader />}>
           {/* <ScrollHandler /> */}
 
           {children}

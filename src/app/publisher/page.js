@@ -1,4 +1,6 @@
 'use client';
+import Loader from '@/components/Loader';
+
 
 import { useEffect, useState } from 'react';
 import {
@@ -184,9 +186,7 @@ export default function PublisherDashboard() {
     };
   }, [selectedDate, selectedMonth]);
 
-  if (loading) {
-    return <div>Loading analytics dashboard...</div>;
-  }
+  if (loading) return <Loader text="Loading analytics dashboard..." />;
 
   const revenueOverview = data.revenueOverview || {};
   const dailyAnalytics = data.dailyAnalytics || {};

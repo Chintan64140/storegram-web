@@ -1,4 +1,6 @@
 'use client';
+import Loader from '@/components/Loader';
+
 
 import { useEffect, useState } from 'react';
 import {
@@ -423,9 +425,7 @@ export default function FileManager() {
     }
   };
 
-  if (loading) {
-    return <div>Loading files...</div>;
-  }
+  if (loading) return <Loader text="Loading files..." />;
 
   return (
     <div className="animate-fade-in space-y-6">

@@ -1,4 +1,6 @@
 'use client';
+import Loader from '@/components/Loader';
+
 import { DollarSign, ArrowRightLeft, CheckCircle, Clock, ReceiptText } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import api from '@/utils/api';
@@ -78,9 +80,7 @@ export default function Billing() {
     }
   };
 
-  if (loading) {
-    return <div>Loading billing data...</div>;
-  }
+  if (loading) return <Loader text="Loading billing data..." />;
 
   const approvedTransactions = (earnings.transactions || []).filter(
     (transaction) => transaction.status === 'APPROVED'

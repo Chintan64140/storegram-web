@@ -1,4 +1,6 @@
 'use client';
+import Loader from '@/components/Loader';
+
 import { useEffect, useState } from 'react';
 import { Activity, Clock3, MapPin, TrendingUp } from 'lucide-react';
 import api from '@/utils/api';
@@ -34,9 +36,7 @@ export default function Progress() {
     return () => window.clearTimeout(timeoutId);
   }, [page, limit]);
 
-  if (loading) {
-    return <div>Loading recent view analytics...</div>;
-  }
+  if (loading) return <Loader text="Loading recent view analytics..." />;
 
   const validViews = views.filter((view) => view.is_valid).length;
   const totalWatchTime = views.reduce((sum, view) => sum + Number(view.watch_time || 0), 0);

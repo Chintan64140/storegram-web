@@ -30,7 +30,7 @@ export default function Settings() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await api.get('/api/user/profile');
+        const response = await api.get('/api/users/profile');
         const user = response.data.userData[0];
         if (user) {
           setProfileData({
@@ -88,7 +88,7 @@ export default function Settings() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await api.put('/api/user/profile', profileData);
+      const response = await api.put('/api/users/profile', profileData);
       const updatedUser = response.data.user;
       const userStr = localStorage.getItem('user');
       if (userStr) {
@@ -107,7 +107,7 @@ export default function Settings() {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await api.put('/api/user/bank-details', bankData);
+      const response = await api.put('/api/users/bank-details', bankData);
       const updatedUser = response.data.user;
       const userStr = localStorage.getItem('user');
       if (userStr) {

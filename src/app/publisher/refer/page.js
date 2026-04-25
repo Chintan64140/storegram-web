@@ -1,4 +1,6 @@
 'use client';
+import Loader from '@/components/Loader';
+
 import { Copy, Users, BadgePercent, Wallet } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 import api from '@/utils/api';
@@ -67,9 +69,7 @@ export default function Refer() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  if (loading) {
-    return <div>Loading referral data...</div>;
-  }
+  if (loading) return <Loader text="Loading referral data..." />;
 
   return (
     <div className="animate-fade-in">
