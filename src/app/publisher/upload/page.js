@@ -1,17 +1,85 @@
 'use client';
 import { UploadCloud, File, X } from 'lucide-react';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { useSearchParams } from 'next/navigation';
 import api from '@/utils/api';
 
+const fetchFolderOptions = async (parentId = null, trail = []) => {
+  const response = await api.get('/publisher/folders', {
+    params: { parentId: parentId || '' },
+  });
+
+  const folders = Array.isArray(response.data) ? response.data : [];
+  const options = [];
+
+  for (const folder of folders) {
+    const nextTrail = [...trail, folder.name];
+    options.push({
+      id: folder.id,
+      label: nextTrail.join(' / '),
+    });
+
+    const children = await fetchFolderOptions(folder.id, nextTrail);
+    options.push(...children);
+  }
+
+  return options;
+};
+
 export default function UploadFiles() {
+  const searchParams = useSearchParams();
+  const requestedFolderIdFromQuery = searchParams.get('folderId');
   const [selectedFile, setSelectedFile] = useState(null);
   const [title, setTitle] = useState('');
   const [duration, setDuration] = useState('');
+  const [folderOptions, setFolderOptions] = useState([]);
+  const [selectedFolderId, setSelectedFolderId] = useState('');
+  const [foldersLoading, setFoldersLoading] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [uploadResult, setUploadResult] = useState(null);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadFolders = async () => {
+      setFoldersLoading(true);
+
+      try {
+        const options = await fetchFolderOptions();
+
+        if (!active) {
+          return;
+        }
+
+        setFolderOptions(options);
+
+        const requestedFolderId = String(requestedFolderIdFromQuery || '').trim();
+        if (requestedFolderId && options.some((folder) => folder.id === requestedFolderId)) {
+          setSelectedFolderId(requestedFolderId);
+        } else {
+          setSelectedFolderId('');
+        }
+      } catch (err) {
+        console.error('Failed to load folders', err);
+        if (active) {
+          setError((currentError) => currentError || 'Failed to load folders.');
+        }
+      } finally {
+        if (active) {
+          setFoldersLoading(false);
+        }
+      }
+    };
+
+    void loadFolders();
+
+    return () => {
+      active = false;
+    };
+  }, [requestedFolderIdFromQuery]);
 
   const onDrop = useCallback(
     (acceptedFiles) => {
@@ -67,6 +135,10 @@ export default function UploadFiles() {
         formData.append('duration', duration.trim());
       }
 
+      if (selectedFolderId) {
+        formData.append('folderId', selectedFolderId);
+      }
+
       const response = await api.post('/publisher/content/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
@@ -76,6 +148,7 @@ export default function UploadFiles() {
       setUploadResult(response.data);
       setSuccess(response.data.message || 'File uploaded successfully.');
       setSelectedFile(null);
+      setTitle('');
       setDuration('');
     } catch (err) {
       console.error('Upload failed', err);
@@ -180,6 +253,30 @@ export default function UploadFiles() {
               </p>
             </div>
 
+            <div className="input-group">
+              <label>Destination Folder</label>
+              <select
+                className="input"
+                value={selectedFolderId}
+                onChange={(event) => setSelectedFolderId(event.target.value)}
+                disabled={foldersLoading}
+              >
+                <option value="">Library root (no folder)</option>
+                {folderOptions.map((folder) => (
+                  <option key={folder.id} value={folder.id}>
+                    {folder.label}
+                  </option>
+                ))}
+              </select>
+              <p className="text-sm text-muted">
+                {foldersLoading
+                  ? 'Loading folders...'
+                  : selectedFolderId
+                    ? 'This upload will be saved inside the selected folder.'
+                    : 'Leave this on root if you want the file outside any folder.'}
+              </p>
+            </div>
+
             <div className="mt-2 flex justify-stretch sm:justify-end">
               <button className="btn btn-primary w-full sm:w-auto" onClick={handleUpload} disabled={loading}>
                 {loading ? 'Uploading...' : 'Upload File'}
@@ -193,7 +290,7 @@ export default function UploadFiles() {
         <div className="card mt-6">
           <h3 className="mb-4 text-xl font-bold">Upload Response</h3>
           <div className="grid gap-4">
-            <div className="rounded-2xl bg-surface-strong p-4">
+            {/* <div className="rounded-2xl bg-surface-strong p-4">
               <p className="mb-2 text-sm text-muted">Public Short Link</p>
               <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
                 <code className="break-all text-accent">{uploadResult.shortLink}</code>
@@ -201,7 +298,7 @@ export default function UploadFiles() {
                   Copy
                 </button>
               </div>
-            </div>
+            </div> */}
 
             <div className="rounded-2xl bg-surface-strong p-4">
               <p className="mb-2 text-sm text-muted">Tracking Status</p>
@@ -218,6 +315,7 @@ export default function UploadFiles() {
                 <p><strong>Title:</strong> {uploadResult.file?.title || 'Untitled'}</p>
                 <p><strong>Short ID:</strong> {uploadResult.file?.short_id}</p>
                 <p><strong>Duration:</strong> {uploadResult.file?.duration || 0}s</p>
+                <p><strong>Folder:</strong> {folderOptions.find((folder) => folder.id === uploadResult.file?.folder_id)?.label || 'Library root'}</p>
                 <p><strong>Views:</strong> {uploadResult.file?.total_views || 0}</p>
                 <p><strong>Earnings:</strong> ${Number(uploadResult.file?.total_earnings || 0).toFixed(2)}</p>
               </div>

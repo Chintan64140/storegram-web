@@ -40,9 +40,9 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          <span className="hidden h-11 w-11 items-center justify-center rounded-full border border-border bg-surface text-accent md:inline-flex">
+          {/* <span className="hidden h-11 w-11 items-center justify-center rounded-full border border-border bg-surface text-accent md:inline-flex">
             <Sparkles size={17} />
-          </span>
+          </span> */}
           <Link
             href="/login"
             className="inline-flex items-center justify-center rounded-full bg-accent px-5 py-2.5 text-sm font-semibold text-white shadow-[0_6px_18px_rgba(0,160,254,0.3)] transition hover:bg-accent-hover"

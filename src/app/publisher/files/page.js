@@ -1,12 +1,18 @@
 'use client';
+
 import Loader from '@/components/Loader';
-
-
+import PaginationControls from '@/components/PaginationControls';
+import api from '@/utils/api';
 import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import {
+  ArrowLeft,
+  ChevronRight,
   Download,
   Eye,
   ExternalLink,
+  Folder as FolderIcon,
+  FolderOpen,
   Link as LinkIcon,
   Pencil,
   PlaySquare,
@@ -15,8 +21,6 @@ import {
   X,
   XCircle,
 } from 'lucide-react';
-import api from '@/utils/api';
-import PaginationControls from '@/components/PaginationControls';
 
 const VIDEO_EXTENSIONS = new Set(['mp4', 'mkv', 'webm', 'mov', 'm4v']);
 const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg']);
@@ -50,7 +54,29 @@ const getPreviewType = (file) => {
 const formatSizeInMb = (sizeInBytes) =>
   `${(Number(sizeInBytes || 0) / (1024 * 1024)).toFixed(2)} MB`;
 
-function PreviewModal({ file, onClose }) {
+const fetchFolderOptions = async (parentId = null, trail = []) => {
+  const response = await api.get('/publisher/folders', {
+    params: { parentId: parentId || '' },
+  });
+
+  const folders = Array.isArray(response.data) ? response.data : [];
+  const options = [];
+
+  for (const folder of folders) {
+    const nextTrail = [...trail, folder.name];
+    options.push({
+      id: folder.id,
+      label: nextTrail.join(' / '),
+    });
+
+    const children = await fetchFolderOptions(folder.id, nextTrail);
+    options.push(...children);
+  }
+
+  return options;
+};
+
+function PreviewModal({ file, onClose, folderLabel }) {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
@@ -172,8 +198,8 @@ function PreviewModal({ file, onClose }) {
             <div className="break-all font-bold text-accent">{file.short_id || 'N/A'}</div>
           </div>
           <div className="rounded-2xl border border-border bg-white/[0.03] p-4">
-            <div className="mb-1 text-xs text-muted">Size</div>
-            <div className="font-bold">{formatSizeInMb(file.size)}</div>
+            <div className="mb-1 text-xs text-muted">Folder</div>
+            <div className="font-bold">{folderLabel || 'Library root'}</div>
           </div>
           <div className="rounded-2xl border border-border bg-white/[0.03] p-4">
             <div className="mb-1 text-xs text-muted">Views</div>
@@ -304,6 +330,12 @@ function FileActionButtons({
 }
 
 export default function FileManager() {
+  const searchParams = useSearchParams();
+  const initialFolderId = String(searchParams.get('folderId') || '').trim() || null;
+  const [folders, setFolders] = useState([]);
+  const [folderOptions, setFolderOptions] = useState([]);
+  const [folderHistory, setFolderHistory] = useState([]);
+  const [currentFolderId, setCurrentFolderId] = useState(initialFolderId);
   const [files, setFiles] = useState([]);
   const [pagination, setPagination] = useState(null);
   const [page, setPage] = useState(1);
@@ -311,24 +343,109 @@ export default function FileManager() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editingId, setEditingId] = useState(null);
-  const [editValues, setEditValues] = useState({ title: '', description: '' });
+  const [editValues, setEditValues] = useState({ title: '', description: '', folderId: '' });
   const [actionMessage, setActionMessage] = useState('');
   const [previewFile, setPreviewFile] = useState(null);
+
+  const folderLabelMap = new Map(folderOptions.map((folder) => [folder.id, folder.label]));
+
+  const loadFolderOptions = async () => {
+    const options = await fetchFolderOptions();
+    setFolderOptions(options);
+  };
+
+  const loadCurrentView = async ({
+    nextPage = page,
+    nextLimit = limit,
+    nextFolderId = currentFolderId,
+    showLoader = true,
+  } = {}) => {
+    if (showLoader) {
+      setLoading(true);
+    }
+
+    try {
+      setError('');
+
+      const fileParams = { page: nextPage, limit: nextLimit };
+      if (nextFolderId) {
+        fileParams.folderId = nextFolderId;
+      } else {
+        fileParams.rootOnly = true;
+      }
+
+      const [folderResponse, fileResponse] = await Promise.all([
+        api.get('/publisher/folders', { params: { parentId: nextFolderId || '' } }),
+        api.get('/publisher/content', { params: fileParams }),
+      ]);
+
+      setFolders(Array.isArray(folderResponse.data) ? folderResponse.data : []);
+      setFiles(fileResponse.data.data || []);
+      setPagination(fileResponse.data.pagination || null);
+    } catch (err) {
+      console.error('Failed to load file manager', err);
+      setError(err.response?.data?.error || 'Failed to fetch files.');
+    } finally {
+      if (showLoader) {
+        setLoading(false);
+      }
+    }
+  };
 
   useEffect(() => {
     let active = true;
 
-    const loadFiles = async () => {
+    const loadOptions = async () => {
       try {
-        setError('');
-        const response = await api.get('/publisher/content', { params: { page, limit } });
+        const options = await fetchFolderOptions();
 
         if (!active) {
           return;
         }
 
-        setFiles(response.data.data || []);
-        setPagination(response.data.pagination || null);
+        setFolderOptions(options);
+      } catch (err) {
+        console.error('Failed to load folder options', err);
+        if (active) {
+          setError((currentError) => currentError || 'Failed to load folders.');
+        }
+      }
+    };
+
+    void loadOptions();
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadData = async () => {
+      setLoading(true);
+
+      try {
+        const fileParams = { page, limit };
+        if (currentFolderId) {
+          fileParams.folderId = currentFolderId;
+        } else {
+          fileParams.rootOnly = true;
+        }
+
+        const [folderResponse, fileResponse] = await Promise.all([
+          api.get('/publisher/folders', { params: { parentId: currentFolderId || '' } }),
+          api.get('/publisher/content', { params: fileParams }),
+        ]);
+
+        if (!active) {
+          return;
+        }
+
+        setError('');
+        setFolders(Array.isArray(folderResponse.data) ? folderResponse.data : []);
+        setFiles(fileResponse.data.data || []);
+        setPagination(fileResponse.data.pagination || null);
       } catch (err) {
         console.error('Failed to fetch files', err);
         if (active) {
@@ -341,26 +458,15 @@ export default function FileManager() {
       }
     };
 
-    const timeoutId = window.setTimeout(() => {
-      void loadFiles();
-    }, 0);
+    void loadData();
 
     return () => {
       active = false;
-      window.clearTimeout(timeoutId);
     };
-  }, [page, limit]);
+  }, [page, limit, currentFolderId]);
 
-  const refreshFiles = async () => {
-    try {
-      setError('');
-      const response = await api.get('/publisher/content', { params: { page, limit } });
-      setFiles(response.data.data || []);
-      setPagination(response.data.pagination || null);
-    } catch (err) {
-      console.error('Failed to refresh files', err);
-      setError(err.response?.data?.error || 'Failed to refresh files.');
-    }
+  const refreshCurrentView = async () => {
+    await loadCurrentView({ showLoader: false });
   };
 
   const handleDelete = async (id) => {
@@ -376,7 +482,7 @@ export default function FileManager() {
       await api.delete(`/publisher/content/${id}`);
       setActionMessage('Content deleted successfully.');
       setPreviewFile((current) => (current?.id === id ? null : current));
-      await refreshFiles();
+      await refreshCurrentView();
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to delete file.');
     }
@@ -393,6 +499,7 @@ export default function FileManager() {
     setEditValues({
       title: file.title || '',
       description: file.description || '',
+      folderId: file.folder_id || '',
     });
     setActionMessage('');
     setError('');
@@ -400,7 +507,7 @@ export default function FileManager() {
 
   const cancelEditing = () => {
     setEditingId(null);
-    setEditValues({ title: '', description: '' });
+    setEditValues({ title: '', description: '', folderId: '' });
   };
 
   const saveFile = async (id) => {
@@ -409,34 +516,81 @@ export default function FileManager() {
       const response = await api.put(`/publisher/content/${id}`, {
         title: editValues.title,
         description: editValues.description,
+        folderId: editValues.folderId,
       });
 
       const updatedFile = response.data.file;
-
-      setFiles((currentFiles) =>
-        currentFiles.map((file) => (file.id === id ? updatedFile : file))
-      );
       setPreviewFile((current) => (current?.id === id ? updatedFile : current));
       setActionMessage(response.data.message || 'Content updated successfully.');
       cancelEditing();
+      await refreshCurrentView();
+      await loadFolderOptions();
     } catch (err) {
       console.error('Failed to update content', err);
       setError(err.response?.data?.error || 'Failed to update content.');
     }
   };
 
-  if (loading) return <Loader text="Loading files..." />;
+  const navigateToFolder = (folder) => {
+    setFolderHistory((current) => [...current, { id: folder.id, name: folder.name }]);
+    setCurrentFolderId(folder.id);
+    setPage(1);
+    setActionMessage('');
+  };
+
+  const navigateUp = () => {
+    if (folderHistory.length === 0) {
+      return;
+    }
+
+    const newHistory = [...folderHistory];
+    newHistory.pop();
+    setFolderHistory(newHistory);
+    setCurrentFolderId(newHistory.length > 0 ? newHistory[newHistory.length - 1].id : null);
+    setPage(1);
+    setActionMessage('');
+  };
+
+  const navigateToBreadcrumb = (index) => {
+    const nextHistory = folderHistory.slice(0, index + 1);
+    setFolderHistory(nextHistory);
+    setCurrentFolderId(nextHistory[nextHistory.length - 1].id);
+    setPage(1);
+    setActionMessage('');
+  };
+
+  const navigateToRoot = () => {
+    setFolderHistory([]);
+    setCurrentFolderId(null);
+    setPage(1);
+    setActionMessage('');
+  };
+
+  if (loading) {
+    return <Loader text="Loading file manager..." />;
+  }
 
   return (
     <div className="animate-fade-in space-y-6">
-      {previewFile && <PreviewModal file={previewFile} onClose={() => setPreviewFile(null)} />}
+      {previewFile && (
+        <PreviewModal
+          file={previewFile}
+          folderLabel={folderLabelMap.get(previewFile.folder_id) || 'Library root'}
+          onClose={() => setPreviewFile(null)}
+        />
+      )}
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-3xl font-extrabold sm:text-4xl">File Manager</h1>
           <p className="mt-2 max-w-3xl text-sm text-muted sm:text-base">
-            Preview videos, images, and supported documents directly from your uploaded file list.
+            Browse your library folder by folder and move uploaded content whenever you need.
           </p>
+        </div>
+        <div className="rounded-2xl border border-accent/20 bg-accent/10 px-4 py-3 text-sm font-medium text-accent">
+          {currentFolderId
+            ? `Current folder: ${folderLabelMap.get(currentFolderId) || 'Selected folder'}`
+            : 'Current folder: Library root'}
         </div>
       </div>
 
@@ -451,6 +605,81 @@ export default function FileManager() {
           {error || actionMessage}
         </div>
       )}
+
+      <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap rounded-2xl border border-border bg-surface p-4 text-sm font-medium">
+        {folderHistory.length > 0 && (
+          <button
+            onClick={navigateUp}
+            className="mr-2 rounded-lg p-1 text-muted transition hover:bg-white/5"
+            aria-label="Go back"
+          >
+            <ArrowLeft size={18} />
+          </button>
+        )}
+
+        <button
+          onClick={navigateToRoot}
+          className={`transition ${
+            folderHistory.length === 0 ? 'font-bold text-foreground' : 'text-muted hover:text-accent'
+          }`}
+        >
+          Home
+        </button>
+
+        {folderHistory.map((folder, index) => (
+          <div key={folder.id} className="flex items-center gap-2">
+            <ChevronRight size={16} className="text-muted" />
+            <button
+              onClick={() => navigateToBreadcrumb(index)}
+              className={`transition ${
+                index === folderHistory.length - 1
+                  ? 'font-bold text-foreground'
+                  : 'text-muted hover:text-accent'
+              }`}
+            >
+              {folder.name}
+            </button>
+          </div>
+        ))}
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <FolderOpen size={18} className="text-accent" />
+          <h2 className="text-lg font-bold">Folders in this location</h2>
+        </div>
+
+        {folders.length === 0 ? (
+          <div className="card p-6 text-sm text-muted">
+            No child folders here yet. You can create one from the folders screen and then upload
+            content into it.
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            {folders.map((folder) => (
+              <button
+                key={folder.id}
+                type="button"
+                onClick={() => navigateToFolder(folder)}
+                className="card flex items-center justify-between gap-4 p-4 text-left transition hover:border-accent/50 hover:shadow-lg"
+              >
+                <div className="flex min-w-0 items-center gap-3">
+                  <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-accent/10 text-accent">
+                    <FolderIcon size={20} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="truncate font-semibold">{folder.name}</p>
+                    <p className="text-xs text-muted">
+                      Created {new Date(folder.created_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+                <ChevronRight size={18} className="shrink-0 text-muted" />
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
 
       <div className="grid gap-4 md:hidden">
         {files.map((file) => {
@@ -500,11 +729,36 @@ export default function FileManager() {
                         }
                       />
                     </div>
+                    <div className="input-group">
+                      <label>Folder</label>
+                      <select
+                        className="input"
+                        value={editValues.folderId}
+                        onChange={(event) =>
+                          setEditValues((current) => ({
+                            ...current,
+                            folderId: event.target.value,
+                          }))
+                        }
+                      >
+                        <option value="">Library root</option>
+                        {folderOptions.map((folder) => (
+                          <option key={folder.id} value={folder.id}>
+                            {folder.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
                 ) : (
-                  <p className="text-sm text-muted">
-                    {file.description || 'No description added for this file.'}
-                  </p>
+                  <>
+                    <p className="text-sm text-muted">
+                      {file.description || 'No description added for this file.'}
+                    </p>
+                    <p className="text-sm text-muted">
+                      Folder: {folderLabelMap.get(file.folder_id) || 'Library root'}
+                    </p>
+                  </>
                 )}
 
                 <div className="grid grid-cols-2 gap-3 rounded-2xl border border-border bg-surface-strong/70 p-4">
@@ -548,7 +802,9 @@ export default function FileManager() {
         })}
 
         {files.length === 0 && (
-          <div className="card p-8 text-center text-sm text-muted">No files found.</div>
+          <div className="card p-8 text-center text-sm text-muted">
+            No files found in this folder.
+          </div>
         )}
 
         <div className="card p-4">
@@ -570,6 +826,7 @@ export default function FileManager() {
               <tr>
                 <th>File Name</th>
                 <th>Description</th>
+                <th>Folder</th>
                 <th>Type</th>
                 <th>Short ID</th>
                 <th>Size (MB)</th>
@@ -613,6 +870,29 @@ export default function FileManager() {
                       file.description || 'No description'
                     )}
                   </td>
+                  <td className="min-w-[220px] text-muted">
+                    {editingId === file.id ? (
+                      <select
+                        className="input"
+                        value={editValues.folderId}
+                        onChange={(event) =>
+                          setEditValues((current) => ({
+                            ...current,
+                            folderId: event.target.value,
+                          }))
+                        }
+                      >
+                        <option value="">Library root</option>
+                        {folderOptions.map((folder) => (
+                          <option key={folder.id} value={folder.id}>
+                            {folder.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      folderLabelMap.get(file.folder_id) || 'Library root'
+                    )}
+                  </td>
                   <td className="text-muted capitalize">{getPreviewType(file)}</td>
                   <td className="text-accent">{file.short_id}</td>
                   <td className="text-muted">{formatSizeInMb(file.size).replace(' MB', '')}</td>
@@ -641,8 +921,8 @@ export default function FileManager() {
               ))}
               {files.length === 0 && (
                 <tr>
-                  <td colSpan="9" className="text-center">
-                    No files found.
+                  <td colSpan="10" className="text-center">
+                    No files found in this folder.
                   </td>
                 </tr>
               )}

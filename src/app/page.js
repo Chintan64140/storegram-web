@@ -348,10 +348,6 @@ export default function Home() {
                 </Link>
               </div>
 
-              <p className="mt-8 text-sm text-muted">
-                By continuing you agree to our terms and platform guidelines.
-              </p>
-
               <div className="mt-10 flex flex-wrap items-center justify-center gap-8 text-base text-[var(--soft-text-strong)]">
                 {features.map((item, index) => {
                   const Icon = item.icon;
@@ -365,7 +361,7 @@ export default function Home() {
                 })}
               </div>
 
-              <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+              <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
                 {appLinks.map((item, index) => {
                   return (
                     <a
@@ -373,7 +369,7 @@ export default function Home() {
                       href={item.href}
                       className="items-center justify-center border rounded-[7px] bg-surface overflow-hidden text-sm font-semibold transition hover:border-accent"
                     >
-                      <img src={item.img} />
+                      <img src={item.img} className="h-14" />
                     </a>
                   );
                 })}
@@ -415,8 +411,9 @@ export default function Home() {
                 <div
                   key={index}
                   className="w-36 h-24 flex flex-col items-center justify-center gap-2 
-          rounded-2xl border border-border-color bg-card
-          text-gray-300 hover:text-accent-hover 
+          rounded-2xl border border-box-border-text
+ bg-card
+          text-box-border-text hover:text-accent-hover 
           hover:border-accent-hover transition-all duration-300 cursor-pointer"
                 >
                   <div>{method.icon}</div>
@@ -771,18 +768,17 @@ export default function Home() {
             </div>
 
             <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
-              <a
-                href="/contact"
-                className="inline-flex items-center justify-center rounded-2xl border border-border bg-surface px-6 py-4 text-sm font-semibold text-foreground transition hover:border-accent"
-              >
-                Get it on Google Play
-              </a>
-              <a
-                href="/contact"
-                className="inline-flex items-center justify-center rounded-2xl border border-border bg-surface px-6 py-4 text-sm font-semibold text-foreground transition hover:border-accent"
-              >
-                Download on the App Store
-              </a>
+              {appLinks.map((item, index) => {
+                return (
+                  <a
+                    key={index}
+                    href={item.href}
+                    className="items-center justify-center border rounded-[7px] bg-surface overflow-hidden text-sm font-semibold transition hover:border-accent"
+                  >
+                    <img src={item.img} className="h-14" />
+                  </a>
+                );
+              })}
             </div>
             <p className="mt-5 text-sm text-muted">
               No account required to explore. Fast access for shared content.

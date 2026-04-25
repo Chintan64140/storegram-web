@@ -16,6 +16,7 @@ import {
   LogOut,
   Menu,
   X,
+  FolderOpen,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import api from "@/utils/api";
@@ -61,6 +62,7 @@ export default function PublisherLayout({ children }) {
       items: [
         { name: "Dashboard", path: "/publisher", icon: LayoutDashboard },
         { name: "Upload Files", path: "/publisher/upload", icon: UploadCloud },
+        { name: "Folders", path: "/publisher/folders", icon: FolderOpen },
         { name: "File Manager", path: "/publisher/files", icon: Folder },
         {
           name: "View Analytics",
