@@ -35,7 +35,7 @@ const MONTHLY_ITEMS = DAILY_ITEMS;
 const createTodayValue = () => new Date().toISOString().slice(0, 10);
 const createMonthValue = () => new Date().toISOString().slice(0, 7);
 
-const formatMoney = (value, digits = 2) => `$${Number(value || 0).toFixed(digits)}`;
+const formatMoney = (value, digits = 2) => `$${Number(value || 0).toFixed(2)}`;
 
 const formatMetricValue = (value, options = {}) => {
   if (options.isCurrency) {
@@ -194,7 +194,7 @@ export default function PublisherDashboard() {
   const earningsModel = data.earningsModel || {};
 
   return (
-    <div className="animate-fade-in grid gap-5 ">
+    <div className="animate-fade-in gap-5 flex flex-col ">
       <div>
         <div className="mb-1 flex items-center gap-2">
           <span
@@ -249,7 +249,7 @@ export default function PublisherDashboard() {
 
       <DashboardSection
         title="How View Earnings Work"
-        description="This explanation is pulled from the backend earning rules, so it matches how valid views are counted today."
+        description="This explanation reflects the current earning rules, so it matches how valid views are counted today."
       >
         <div className="mb-4 grid gap-3 md:hidden">
           <div className="rounded-2xl border border-white/[0.07] bg-white/[0.03] p-4">

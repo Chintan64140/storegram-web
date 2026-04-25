@@ -88,9 +88,8 @@ export default function Refer() {
               Earn {stats.bonusPercentage || '5%'} from referred publishers
             </h3>
             <p className="mb-6 text-sm leading-7 text-muted sm:text-base">
-              Share the registration URL below. The backend accepts `referralCode` during
-              publisher signup and tracks referral stats through `/api/referrals/stats` and
-              `/publisher/analytics/users`.
+              Share the registration link below to invite new publishers and track the growth of
+              your referral network from your dashboard.
             </p>
 
             <div className="mb-4">

@@ -119,7 +119,7 @@ export default function Billing() {
             </div>
           </div>
           <p className="text-sm text-muted">
-            API total earned: ${Number(earnings.totalEarned || 0).toFixed(2)}
+            Total earned so far: ${Number(earnings.totalEarned || 0).toFixed(2)}
           </p>
         </div>
 
@@ -166,7 +166,7 @@ export default function Billing() {
                 onChange={(e) => setReferenceId(e.target.value)}
               />
               <p className="text-sm text-muted">
-                The backend expects this in the `referenceId` field for `POST /api/payments/request`.
+                Add your payout note or transfer details so the team can process the request correctly.
               </p>
             </div>
             <button type="submit" className="btn btn-primary mt-2 w-full sm:w-auto" disabled={submitting}>

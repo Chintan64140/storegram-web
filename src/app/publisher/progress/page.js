@@ -88,8 +88,8 @@ export default function Progress() {
       <div className="card">
         <h3 className="mb-4 text-xl font-bold">Recent View Events</h3>
         <p className="mb-5 text-sm text-muted sm:text-base">
-          This table is backed by `GET /publisher/analytics/views`, which returns the most recent
-          100 view rows with watch time, validity, location, and file metadata.
+          Review your most recent view events with watch time, validity, location, and file
+          details in one place.
         </p>
 
         <div className="space-y-4 md:hidden">

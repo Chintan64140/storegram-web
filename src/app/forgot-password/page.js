@@ -102,7 +102,7 @@ export default function ForgotPasswordPage() {
             Reset Publisher Password
           </h1>
           <p className="mt-3 text-sm text-muted">
-            This page uses the backend auth flow: request an OTP by email, then confirm it with your new password.
+            Request a reset code by email, then confirm it with your new password.
           </p>
         </div>
 
@@ -152,7 +152,7 @@ export default function ForgotPasswordPage() {
             </div>
 
             <div className="rounded-2xl border border-border bg-surface/70 px-4 py-4 text-sm text-muted">
-              Backend endpoint: <span className="font-semibold text-foreground">POST /auth/forgot-password</span>
+              We&apos;ll send a reset code to the email address linked to your publisher account.
             </div>
 
             <button type="submit" className="btn btn-primary w-full" disabled={loading}>
@@ -215,7 +215,7 @@ export default function ForgotPasswordPage() {
             </div>
 
             <div className="rounded-2xl border border-border bg-surface/70 px-4 py-4 text-sm text-muted">
-              Backend endpoint: <span className="font-semibold text-foreground">POST /auth/reset-password</span>
+              Enter the code from your email and choose a new password to finish recovery.
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">

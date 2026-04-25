@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard,
   UploadCloud,
@@ -11,24 +11,28 @@ import {
   Users,
   Palette,
   CreditCard,
+  Settings as SettingsIcon,
   Shield,
   LogOut,
   Menu,
   X,
-} from 'lucide-react';
-import { useState } from 'react';
-import api from '@/utils/api';
-import PublisherAuthGuard from '@/components/PublisherAuthGuard';
-import { clearPublisherSession, getStoredPublisherUser } from '@/utils/auth';
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import api from "@/utils/api";
+import PublisherAuthGuard from "@/components/PublisherAuthGuard";
+import { clearPublisherSession, getStoredPublisherUser } from "@/utils/auth";
+import ThemeLogo from "@/components/ThemeLogo";
 
 export default function PublisherLayout({ children }) {
   const pathname = usePathname();
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [publisherName] = useState(() => {
+  const [publisherName, setPublisherName] = useState("Publisher");
+
+  useEffect(() => {
     const user = getStoredPublisherUser();
-    return user?.name || 'Publisher';
-  });
+    setPublisherName(user?.name || "Publisher");
+  }, []);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const handleLogout = async () => {
@@ -39,12 +43,12 @@ export default function PublisherLayout({ children }) {
     setIsLoggingOut(true);
 
     try {
-      await api.post('/api/auth/logout');
+      await api.post("/api/auth/logout");
     } catch (error) {
-      console.error('Logout request failed', error);
+      console.error("Logout request failed", error);
     } finally {
       clearPublisherSession();
-      router.replace('/login');
+      router.replace("/login");
       setIsLoggingOut(false);
     }
   };
@@ -53,28 +57,32 @@ export default function PublisherLayout({ children }) {
 
   const menuSections = [
     {
-      title: 'Content',
+      title: "Content",
       items: [
-        { name: 'Dashboard', path: '/publisher', icon: LayoutDashboard },
-        { name: 'Upload Files', path: '/publisher/upload', icon: UploadCloud },
-        { name: 'File Manager', path: '/publisher/files', icon: Folder },
-        { name: 'View Analytics', path: '/publisher/progress', icon: TrendingUp },
-        { name: 'Referrals', path: '/publisher/refer', icon: Users },
+        { name: "Dashboard", path: "/publisher", icon: LayoutDashboard },
+        { name: "Upload Files", path: "/publisher/upload", icon: UploadCloud },
+        { name: "File Manager", path: "/publisher/files", icon: Folder },
+        {
+          name: "View Analytics",
+          path: "/publisher/progress",
+          icon: TrendingUp,
+        },
+        { name: "Referrals", path: "/publisher/refer", icon: Users },
       ],
     },
     {
-      title: 'Account',
+      title: "Account",
       items: [
-        { name: 'Billing', path: '/publisher/billing', icon: CreditCard },
-        { name: 'Security', path: '/publisher/security', icon: Shield },
-        { name: 'API Status', path: '/publisher/branding', icon: Palette },
-        { name: 'Unsupported', path: '/publisher/playlists', icon: ListVideo },
+        { name: "Billing", path: "/publisher/billing", icon: CreditCard },
+        { name: "Security", path: "/publisher/security", icon: Shield },
+        { name: "Settings", path: "/publisher/settings", icon: SettingsIcon },
+        { name: "Platform Status", path: "/publisher/branding", icon: Palette },
+        { name: "Unsupported", path: "/publisher/playlists", icon: ListVideo },
       ],
     },
   ];
 
   return (
-    
     <PublisherAuthGuard>
       <div className="min-h-screen bg-background text-foreground">
         {sidebarOpen && (
@@ -88,7 +96,7 @@ export default function PublisherLayout({ children }) {
 
         <aside
           className={`fixed inset-y-0 left-0 z-50 flex w-[272px] flex-col border-r border-border bg-surface/95 backdrop-blur transition-transform duration-300 lg:translate-x-0 ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+            sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
           <div className="flex items-center justify-between border-b border-border px-5 py-5">
@@ -97,7 +105,12 @@ export default function PublisherLayout({ children }) {
               className="text-xl font-semibold tracking-tight"
               onClick={() => setSidebarOpen(false)}
             >
-              Store<span className="text-accent">Gram</span>
+              <ThemeLogo
+                width={168}
+                height={42}
+                priority
+                className="h-13 w-auto"
+              />
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -119,7 +132,8 @@ export default function PublisherLayout({ children }) {
                     const Icon = item.icon;
                     const isActive =
                       pathname === item.path ||
-                      (item.path !== '/publisher' && pathname.startsWith(item.path));
+                      (item.path !== "/publisher" &&
+                        pathname.startsWith(item.path));
 
                     return (
                       <li key={item.path}>
@@ -128,8 +142,8 @@ export default function PublisherLayout({ children }) {
                           onClick={() => setSidebarOpen(false)}
                           className={`flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition ${
                             isActive
-                              ? 'bg-accent text-white shadow-[0_14px_34px_rgba(0,160,254,0.26)]'
-                              : 'text-muted hover:bg-white/5 hover:text-foreground'
+                              ? "bg-accent text-white shadow-[0_14px_34px_rgba(0,160,254,0.26)]"
+                              : "text-muted hover:bg-white/5 hover:text-foreground"
                           }`}
                         >
                           <Icon size={18} />
@@ -149,7 +163,7 @@ export default function PublisherLayout({ children }) {
               className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-danger transition hover:bg-danger/10"
             >
               <LogOut size={18} />
-              {isLoggingOut ? 'Logging out...' : 'Logout'}
+              {isLoggingOut ? "Logging out..." : "Logout"}
             </button>
           </div>
         </aside>
@@ -165,7 +179,9 @@ export default function PublisherLayout({ children }) {
                 <Menu size={20} />
               </button>
               <div className="min-w-0">
-                <p className="text-xs uppercase tracking-[0.24em] text-muted">Publisher workspace</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-muted">
+                  Publisher workspace
+                </p>
                 <p className="truncate text-sm font-medium text-foreground sm:text-base">
                   Welcome, {publisherName}
                 </p>

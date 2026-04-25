@@ -112,13 +112,13 @@ export default function UploadFiles() {
             <UploadCloud size={32} />
           </div>
           <h3 className="mb-2 text-xl font-bold sm:text-2xl">
-            Choose one file for the publisher upload API
+            Choose one file to upload
           </h3>
           <p className="text-sm text-muted sm:text-base">
-            The backend expects `multipart/form-data` with the file in a field named `file`.
+            Add one supported file and we&apos;ll prepare it for your publisher library.
           </p>
           <p className="mt-4 text-xs text-muted sm:text-sm">
-            Supported by the API: MP4, MKV, PNG, JPG, JPEG. Max size: 100MB.
+            Supported formats: MP4, MKV, PNG, JPG, JPEG. Max size: 100MB.
           </p>
         </div>
       </div>
@@ -176,14 +176,13 @@ export default function UploadFiles() {
                 placeholder="Optional for images"
               />
               <p className="text-sm text-muted">
-                The API uses duration to calculate the valid-view threshold for tracking and publisher
-                earnings.
+                Duration helps calculate view validation and publisher earnings more accurately.
               </p>
             </div>
 
             <div className="mt-2 flex justify-stretch sm:justify-end">
               <button className="btn btn-primary w-full sm:w-auto" onClick={handleUpload} disabled={loading}>
-                {loading ? 'Uploading...' : 'Upload via /publisher/content/upload'}
+                {loading ? 'Uploading...' : 'Upload File'}
               </button>
             </div>
           </div>
@@ -205,11 +204,11 @@ export default function UploadFiles() {
             </div>
 
             <div className="rounded-2xl bg-surface-strong p-4">
-              <p className="mb-2 text-sm text-muted">Tracking Endpoints</p>
-              <div className="grid gap-2">
-                <code className="break-all">{uploadResult.tracking?.start}</code>
-                <code className="break-all">{uploadResult.tracking?.heartbeat}</code>
-                <code className="break-all">{uploadResult.tracking?.end}</code>
+              <p className="mb-2 text-sm text-muted">Tracking Status</p>
+              <div className="grid gap-2 text-sm sm:text-base">
+                <p><strong>View tracking:</strong> Ready</p>
+                <p><strong>Playback updates:</strong> Enabled</p>
+                <p><strong>Earnings sync:</strong> Active</p>
               </div>
             </div>
 

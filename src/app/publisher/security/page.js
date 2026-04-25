@@ -52,8 +52,8 @@ export default function PublisherSecurityPage() {
       <div>
         <h1 className="mb-2 text-3xl font-extrabold sm:text-4xl">Account Security</h1>
         <p className="max-w-3xl text-sm text-muted sm:text-base">
-          Change your current publisher password using the protected backend auth endpoint. This
-          updates the password for your signed-in account immediately.
+          Change your current publisher password securely. Your update is applied to the signed-in
+          account immediately.
         </p>
       </div>
 
@@ -74,8 +74,7 @@ export default function PublisherSecurityPage() {
         <div className="card">
           <h2 className="mb-2 text-xl font-bold">Change Password</h2>
           <p className="mb-6 text-sm text-muted">
-            The backend expects `oldPassword` and `newPassword`. Confirm password is validated
-            here in the publisher UI before sending the request.
+            Confirm password is checked here before your password update is submitted securely.
           </p>
 
           <form onSubmit={handleSubmit} className="grid gap-4">
@@ -122,8 +121,8 @@ export default function PublisherSecurityPage() {
           <h2 className="mb-3 text-lg font-bold">Password Recovery</h2>
           <p className="text-sm leading-7 text-muted sm:text-base">
             If you ever lose access to your current password, use the forgot-password screen from
-            the login page. That flow sends an OTP to your email and calls the backend reset
-            endpoint with the OTP and your new password.
+            the login page. That flow sends a reset code to your email and lets you set a new
+            password safely.
           </p>
         </div>
       </div>

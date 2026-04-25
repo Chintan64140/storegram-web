@@ -1,6 +1,7 @@
 'use client';
 
 import Navbar from '@/components/Navbar';
+import Footer from '@/components/Footer';
 
 export default function Contact() {
   return (
@@ -52,11 +53,7 @@ export default function Contact() {
         </div>
       </main>
 
-      <footer style={{ borderTop: '1px solid var(--border-color)', padding: '2rem 0', textAlign: 'center', color: 'var(--text-secondary)' }}>
-        <div className="container">
-          <p>&copy; {new Date().getFullYear()} StoreGram. All rights reserved.</p>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }
