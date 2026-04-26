@@ -18,8 +18,6 @@ import {
   Apple,
   Play,
 } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
 import { FaGooglePay, FaUniversity, FaGlobe } from "react-icons/fa";
 import { SiPhonepe } from "react-icons/si";
 import { RiBankLine } from "react-icons/ri";
@@ -306,14 +304,12 @@ const appLinks = [
 
 export default function Home() {
   return (
-    <div className="min-h-screen overflow-x-hidden bg-background text-foreground">
-      <Navbar />
-
+    <>
       <main>
-        <section className="relative overflow-hidden px-3 pt-8">
+        <section className="relative overflow-hidden px-3 pt-5 sm:pt-6">
           <div className="absolute inset-x-0 top-0 h-[34rem] bg-[radial-gradient(circle_at_top,_rgba(0,160,254,0.18),_transparent_46%)]" />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0)_0%,#00a0fe69_100%)]" />
-          <div className="container relative py-14 md:py-20">
+          <div className="container relative py-10 sm:py-12 md:py-20">
             <div className="mx-auto max-w-4xl text-center">
               <div className="inline-flex items-center gap-2 rounded-full border border-[rgba(0,160,254,0.2)] bg-[rgba(0,160,254,0.08)] px-4 py-2 text-sm font-semibold text-accent">
                 <Sparkles size={16} />
@@ -367,9 +363,9 @@ export default function Home() {
                     <a
                       key={index}
                       href={item.href}
-                      className="items-center justify-center border rounded-[7px] bg-surface overflow-hidden text-sm font-semibold transition hover:border-accent"
+                      className="items-center justify-center border rounded-[10px] bg-surface overflow-hidden text-sm font-semibold transition hover:border-accent"
                     >
-                      <img src={item.img} className="h-14" />
+                      <img src={item.img} className="h-12 sm:h-14" />
                     </a>
                   );
                 })}
@@ -445,7 +441,7 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="mt-16 gap-x-10 grid grid-cols-3">
+            <div className="mt-16 gap-x-10 grid grid-cols-1 gap-10 sm:grid-cols-3">
               {powerTools.map((tool, index) => {
                 const Icon = tool.icon;
 
@@ -815,8 +811,6 @@ export default function Home() {
           </div>
         </section>
       </main>
-
-      <Footer />
-    </div>
+    </>
   );
 }

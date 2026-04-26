@@ -1,15 +1,9 @@
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-
 export const metadata = {
   title: 'About Us - StoreGram',
 };
 
 export default function About() {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar />
-      
       <main style={{ flex: 1, padding: '4rem 0' }}>
         <div className="container animate-fade-in" style={{ maxWidth: '800px' }}>
           <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '2rem', color: 'var(--text-primary)' }}>
@@ -36,8 +30,5 @@ export default function About() {
           </div>
         </div>
       </main>
-
-      <Footer />
-    </div>
   );
 }

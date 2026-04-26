@@ -54,9 +54,9 @@ export default function Footer() {
   return (
     <footer className="bg-background border-t border-border pt-16 pb-8 text-muted">
       <div className="container">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
           {/* Column 1: Logo & Description */}
-          <div className="lg:col-span-1">
+          <div className="col-span-2 lg:col-span-1">
             <Link
               href="/"
               className="text-2xl font-bold text-foreground block mb-6"
@@ -130,7 +130,7 @@ export default function Footer() {
           </div>
 
           {/* Column 4: Get The App */}
-          <div>
+          <div className="col-span-2">
             <h4 className="text-white text-sm font-bold tracking-[1px] uppercase mb-6">
               Get The App
             </h4>

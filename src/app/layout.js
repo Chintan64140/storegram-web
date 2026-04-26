@@ -6,6 +6,7 @@ export const metadata = {
 import { Suspense } from "react";
 import Script from "next/script";
 import "./globals.css";
+import AppChrome from "@/components/AppChrome";
 import ScrollHandler from "@/components/Scroll-controller";
 import Loader from "@/components/Loader";
 
@@ -36,7 +37,9 @@ export default function RootLayout({ children }) {
         </Script>
         <Suspense fallback={<Loader />}>
           {/* <ScrollHandler /> */}
-          <div className="h-screen overflow-auto relative">{children}</div>
+          <div className="h-screen overflow-auto scroll-smooth relative">
+            <AppChrome>{children}</AppChrome>
+          </div>
         </Suspense>
       </body>
     </html>

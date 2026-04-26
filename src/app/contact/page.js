@@ -1,13 +1,7 @@
 'use client';
 
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-
 export default function Contact() {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar />
-      
       <main style={{ flex: 1, padding: '4rem 0' }}>
         <div className="container animate-fade-in" style={{ maxWidth: '600px' }}>
           <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '1rem', textAlign: 'center' }}>
@@ -52,8 +46,5 @@ export default function Contact() {
           </div>
         </div>
       </main>
-
-      <Footer />
-    </div>
   );
 }

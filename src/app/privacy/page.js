@@ -1,15 +1,9 @@
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-
 export const metadata = {
   title: 'Privacy Policy - StoreGram',
 };
 
 export default function Privacy() {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar />
-      
       <main style={{ flex: 1, padding: '4rem 0' }}>
         <div className="container animate-fade-in" style={{ maxWidth: '800px' }}>
           <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '2rem', color: 'var(--text-primary)' }}>
@@ -22,7 +16,7 @@ export default function Privacy() {
             </p>
 
             <p style={{ marginBottom: '1.5rem' }}>
-              Your privacy is important to us. It is StoreGram's policy to respect your privacy and comply with any applicable law and regulation regarding any personal information we may collect about you, including across our website, and other sites we own and operate.
+              Your privacy is important to us. It is StoreGram&apos;s policy to respect your privacy and comply with any applicable law and regulation regarding any personal information we may collect about you, including across our website, and other sites we own and operate.
             </p>
 
             <h3 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginTop: '2rem', marginBottom: '1rem' }}>1. Information We Collect</h3>
@@ -52,8 +46,5 @@ export default function Privacy() {
           </div>
         </div>
       </main>
-
-      <Footer />
-    </div>
   );
 }

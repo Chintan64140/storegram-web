@@ -1,15 +1,9 @@
-import Navbar from '@/components/Navbar';
-import Footer from '@/components/Footer';
-
 export const metadata = {
   title: 'Terms of Service - StoreGram',
 };
 
 export default function Terms() {
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
-      <Navbar />
-      
       <main style={{ flex: 1, padding: '4rem 0' }}>
         <div className="container animate-fade-in" style={{ maxWidth: '800px' }}>
           <h1 style={{ fontSize: '3rem', fontWeight: 800, marginBottom: '2rem', color: 'var(--text-primary)' }}>
@@ -44,13 +38,10 @@ export default function Terms() {
 
             <h3 style={{ fontSize: '1.5rem', color: 'var(--text-primary)', marginTop: '2rem', marginBottom: '1rem' }}>4. Disclaimer</h3>
             <p style={{ marginBottom: '1.5rem' }}>
-              The materials on StoreGram's website are provided on an 'as is' basis. StoreGram makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
+              The materials on StoreGram&apos;s website are provided on an &apos;as is&apos; basis. StoreGram makes no warranties, expressed or implied, and hereby disclaims and negates all other warranties including, without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
             </p>
           </div>
         </div>
       </main>
-
-      <Footer />
-    </div>
   );
 }
