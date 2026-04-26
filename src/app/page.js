@@ -292,13 +292,13 @@ const appLinks = [
     label: "Get it on Google Play",
     href: "#app",
     icon: Play,
-    img: "./dashboard/playstore.svg",
+    img: "/Dashboard/playstore.svg",
   },
   {
     label: "Download on the App Store",
     href: "#app",
     icon: Apple,
-    img: "./dashboard/appstore.svg",
+    img: "/Dashboard/appstore.svg",
   },
 ];
 
