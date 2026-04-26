@@ -1,39 +1,46 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
-import { getPublisherToken, getStoredPublisherUser, isPublisherUser } from '@/utils/auth';
+import {
+  getPublisherToken,
+  getStoredPublisherUser,
+  isPublisherUser,
+} from '@/utils/auth';
 
 export default function PublisherAuthGuard({ children }) {
   const pathname = usePathname();
   const router = useRouter();
-  const token = getPublisherToken();
-  const user = getStoredPublisherUser();
-  const isAuthorized = Boolean(token && isPublisherUser(user) && user.is_approved);
+
+  const [isReady, setIsReady] = useState(false);
+  const [isAuthorized, setIsAuthorized] = useState(false);
 
   useEffect(() => {
+    const token = getPublisherToken();
+    const user = getStoredPublisherUser();
+
+    const authorized =
+      token && isPublisherUser(user) && user?.is_approved;
+
     if (!token || !user) {
       router.replace(`/login?next=${encodeURIComponent(pathname)}`);
-      return;
-    }
-
-    if (!isPublisherUser(user)) {
+    } else if (!isPublisherUser(user)) {
       router.replace('/login');
-      return;
+    } else if (!user.is_approved) {
+      router.replace('/login?reason=approval');
     }
 
-    if (!user.is_approved) {
-      router.replace('/login?reason=approval');
-      return;
-    }
-  }, [isAuthorized, pathname, router, token, user]);
+    setIsAuthorized(!!authorized);
+    setIsReady(true);
+  }, [pathname, router]);
+
+  // 🚨 Prevent hydration mismatch
+  if (!isReady) {
+    return null; // or skeleton loader
+  }
 
   if (!isAuthorized) {
-    return (
-      <div className="flex min-h-screen items-center justify-center bg-background">
-        <p className="text-sm text-muted">Checking your session...</p>
-      </div>
-    );
+    return null; // redirect already triggered
   }
 
   return children;

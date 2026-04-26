@@ -30,14 +30,13 @@ const themeInitializationScript = `
 export default function RootLayout({ children }) {
   return (
     <html lang="en" suppressHydrationWarning className="scroll-smooth">
-      <body className="min-h-screen bg-background text-foreground antialiased">
+      <body className="min-h-screen bg-background text-foreground antialiased relative">
         <Script id="storegram-theme-init" strategy="beforeInteractive">
           {themeInitializationScript}
         </Script>
         <Suspense fallback={<Loader />}>
           {/* <ScrollHandler /> */}
-
-          {children}
+          <div className="h-screen overflow-auto relative">{children}</div>
         </Suspense>
       </body>
     </html>

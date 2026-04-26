@@ -305,7 +305,7 @@ export default function FoldersManager() {
                       <Link
                         href={`/publisher/files?folderId=${folder.id}`}
                         onClick={(e) => e.stopPropagation()}
-                        className="rounded-lg px-3 py-2 text-sm text-accent transition hover:bg-accent/10"
+                        className="rounded-lg px-2 py-2 text-sm text-accent transition hover:bg-accent/10"
                         title="View content"
                       >
                         View Files

@@ -86,7 +86,7 @@ export default function PublisherLayout({ children }) {
 
   return (
     <PublisherAuthGuard>
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="min-h-screen bg-background text-foreground relative">
         {sidebarOpen && (
           <button
             type="button"

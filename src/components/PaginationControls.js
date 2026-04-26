@@ -33,7 +33,7 @@ export default function PaginationControls({
   };
 
   return (
-    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between py-4 text-sm text-muted">
+    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between py-3 text-sm text-muted">
       
       {/* Left side */}
       <div className="flex items-center gap-3 flex-wrap">
