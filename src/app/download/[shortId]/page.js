@@ -3,12 +3,8 @@ import Navbar from '@/components/Navbar';
 import {
   Download,
   ExternalLink,
-  Eye,
-  HardDrive,
   PlaySquare,
-  Shield,
   Smartphone,
-  Clock3,
 } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://storegram-backend-39ki.onrender.com';
@@ -99,6 +95,32 @@ function formatUploadedDate(value) {
   });
 }
 
+function formatCurrency(value) {
+  const amount = Number(value);
+
+  if (!Number.isFinite(amount)) {
+    return null;
+  }
+
+  return new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 2,
+  }).format(amount);
+}
+
+function getFileHostLabel(fileUrl) {
+  if (!fileUrl) {
+    return 'Unknown';
+  }
+
+  try {
+    return new URL(fileUrl).hostname.replace(/^www\./, '');
+  } catch {
+    return 'Unknown';
+  }
+}
+
 async function getFile(shortId) {
   const response = await fetch(`${API_URL}/api/files/${shortId}`, {
     cache: 'no-store',
@@ -112,7 +134,13 @@ async function getFile(shortId) {
   return data?.file || null;
 }
 
-function buildAppViewUrl(shortId) {
+function buildAppViewUrl(file, shortId) {
+  const directAppUrl = file?.app_view_url || file?.deep_link_url || file?.app_url;
+
+  if (directAppUrl) {
+    return directAppUrl;
+  }
+
   if (!APP_VIEW_BASE_URL) {
     return '/#app';
   }
@@ -120,6 +148,57 @@ function buildAppViewUrl(shortId) {
   return APP_VIEW_BASE_URL.includes('{shortId}')
     ? APP_VIEW_BASE_URL.replace('{shortId}', shortId)
     : `${APP_VIEW_BASE_URL.replace(/\/$/, '')}/${shortId}`;
+}
+
+function buildPreviewDetails(file, shortId, previewType) {
+  const details = [
+    {
+      label: 'Preview Type',
+      value: previewType,
+      valueClassName: 'capitalize',
+    },
+    {
+      label: 'File Size',
+      value: formatSize(file.size),
+    },
+    {
+      label: 'Shared On',
+      value: formatUploadedDate(file.created_at),
+    },
+    {
+      label: 'Short Link',
+      value: file.short_id || shortId,
+    },
+    {
+      label: 'Hosted On',
+      value: getFileHostLabel(file.file_url),
+    },
+  ];
+
+  if (Number(file.duration) > 0) {
+    details.splice(2, 0, {
+      label: 'Duration',
+      value: formatDuration(file.duration),
+    });
+  }
+
+  if (file.total_views != null) {
+    details.push({
+      label: 'Views',
+      value: Number(file.total_views || 0).toLocaleString(),
+    });
+  }
+
+  const earnings = formatCurrency(file.total_earnings);
+  if (earnings) {
+    details.push({
+      label: 'Earnings',
+      value: earnings,
+      valueClassName: 'text-success',
+    });
+  }
+
+  return details;
 }
 
 function PreviewContent({ file }) {
@@ -208,7 +287,8 @@ export default async function DownloadPage({ params }) {
   }
 
   const previewType = getPreviewType(file);
-  const appViewUrl = buildAppViewUrl(shortId);
+  const appViewUrl = buildAppViewUrl(file, shortId);
+  const previewDetails = buildPreviewDetails(file, shortId, previewType);
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -269,6 +349,8 @@ export default async function DownloadPage({ params }) {
 
                   <a
                     href={appViewUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="btn w-full justify-center border border-white/10 bg-white/5 text-foreground hover:bg-white/10"
                   >
                     <Smartphone size={18} />
@@ -282,42 +364,17 @@ export default async function DownloadPage({ params }) {
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
-                <div className="rounded-2xl border border-border bg-white/[0.03] p-4">
-                  <div className="mb-1 text-xs text-muted">Preview Type</div>
-                  <div className="font-bold capitalize text-foreground">{previewType}</div>
-                </div>
-                <div className="rounded-2xl border border-border bg-white/[0.03] p-4">
-                  <div className="mb-1 text-xs text-muted">File Size</div>
-                  <div className="font-bold text-foreground">{formatSize(file.size)}</div>
-                </div>
-                <div className="rounded-2xl border border-border bg-white/[0.03] p-4">
-                  <div className="mb-1 flex items-center gap-2 text-xs text-muted">
-                    <Clock3 size={14} />
-                    Duration
+                {previewDetails.map((detail) => (
+                  <div
+                    key={detail.label}
+                    className="rounded-2xl border border-border bg-white/[0.03] p-4"
+                  >
+                    <div className="mb-1 text-xs text-muted">{detail.label}</div>
+                    <div className={`font-bold text-foreground ${detail.valueClassName || ''}`.trim()}>
+                      {detail.value}
+                    </div>
                   </div>
-                  <div className="font-bold text-foreground">{formatDuration(file.duration)}</div>
-                </div>
-                <div className="rounded-2xl border border-border bg-white/[0.03] p-4">
-                  <div className="mb-1 flex items-center gap-2 text-xs text-muted">
-                    <Eye size={14} />
-                    Shared On
-                  </div>
-                  <div className="font-bold text-foreground">{formatUploadedDate(file.created_at)}</div>
-                </div>
-                <div className="rounded-2xl border border-border bg-white/[0.03] p-4 sm:col-span-2 lg:col-span-1">
-                  <div className="mb-1 flex items-center gap-2 text-xs text-muted">
-                    <Shield size={14} />
-                    Status
-                  </div>
-                  <div className="font-bold text-success">Scanned Safe</div>
-                </div>
-                <div className="rounded-2xl border border-border bg-white/[0.03] p-4 sm:col-span-2 lg:col-span-1">
-                  <div className="mb-1 flex items-center gap-2 text-xs text-muted">
-                    <HardDrive size={14} />
-                    Source
-                  </div>
-                  <div className="font-bold text-foreground">StoreGram Secure Delivery</div>
-                </div>
+                ))}
               </div>
             </aside>
           </div>
