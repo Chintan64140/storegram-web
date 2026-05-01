@@ -9,6 +9,7 @@ import "./globals.css";
 import AppChrome from "@/components/AppChrome";
 import ScrollHandler from "@/components/Scroll-controller";
 import Loader from "@/components/Loader";
+import GoogleAuthProviderWrapper from "@/components/GoogleAuthProviderWrapper";
 
 const themeInitializationScript = `
   (() => {
@@ -37,9 +38,11 @@ export default function RootLayout({ children }) {
         </Script>
         <Suspense fallback={<Loader />}>
           {/* <ScrollHandler /> */}
-          <div className="h-screen overflow-auto scroll-smooth relative">
-            <AppChrome>{children}</AppChrome>
-          </div>
+          <GoogleAuthProviderWrapper>
+            <div className="h-screen overflow-auto scroll-smooth relative">
+              <AppChrome>{children}</AppChrome>
+            </div>
+          </GoogleAuthProviderWrapper>
         </Suspense>
       </body>
     </html>

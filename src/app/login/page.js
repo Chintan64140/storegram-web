@@ -10,6 +10,7 @@ import {
   isPublisherUser,
   setPublisherSession,
 } from '@/utils/auth';
+import GoogleLoginButton from '@/components/GoogleLoginButton';
 
 function LoginContent() {
   const [email, setEmail] = useState('');
@@ -61,6 +62,22 @@ function LoginContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSuccess = (data) => {
+    if (!isPublisherUser(data.user)) {
+      setError('This login is only for publisher accounts.');
+      return;
+    }
+    if (!data.user.is_approved) {
+      setError('Your publisher account is pending approval.');
+      return;
+    }
+    setPublisherSession({
+      token: data.token,
+      user: data.user,
+    });
+    router.push(nextPath);
   };
 
   return (
@@ -122,6 +139,21 @@ function LoginContent() {
           <button type="submit" className="btn btn-primary mt-2 w-full" disabled={loading}>
             {loading ? 'Logging in...' : 'Sign In'}
           </button>
+          
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-[#0f0f0f] px-2 text-muted">Or continue with</span>
+            </div>
+          </div>
+          
+          <GoogleLoginButton 
+            onSuccess={handleGoogleSuccess} 
+            onError={(msg) => setError(msg)} 
+            isRegister={false} 
+          />
         </form>
 
         <div className="mt-6 text-center">

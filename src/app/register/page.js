@@ -4,6 +4,7 @@ import { Suspense, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import api from '@/utils/api';
+import GoogleLoginButton from '@/components/GoogleLoginButton';
 
 function RegisterContent() {
   const [name, setName] = useState('');
@@ -40,6 +41,11 @@ function RegisterContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleGoogleSuccess = () => {
+    alert('Registration successful via Google! Please login once your account is approved by an Admin.');
+    router.push('/login');
   };
 
   return (
@@ -120,6 +126,22 @@ function RegisterContent() {
           <button type="submit" className="btn btn-primary mt-2 w-full" disabled={loading}>
             {loading ? 'Registering...' : 'Sign Up'}
           </button>
+          
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10"></div>
+            </div>
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-[#0f0f0f] px-2 text-muted">Or continue with</span>
+            </div>
+          </div>
+          
+          <GoogleLoginButton 
+            onSuccess={handleGoogleSuccess} 
+            onError={(msg) => setError(msg)} 
+            isRegister={true}
+            referralCode={effectiveReferralCode}
+          />
         </form>
 
         <div className="mt-6 text-center">
