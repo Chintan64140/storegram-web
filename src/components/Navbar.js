@@ -21,11 +21,11 @@ export default function Navbar() {
             width={168}
             height={42}
             priority
-            className="h-12 w-auto sm:h-12 md:h-14"
+            className="h-12 w-auto sm:h-12 md:h-13"
           />
         </Link>
 
-        <div className="hidden items-center gap-7 lg:flex">
+        <div className="hidden items-center justify-center gap-7 lg:flex">
           {navLinks.map((link) => (
             <Link
               key={link.label}
@@ -37,7 +37,7 @@ export default function Navbar() {
           ))}
         </div>
 
-        <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+        <div className="ml-auto md:ml-0 flex shrink-0 items-center gap-2 sm:gap-3">
           <ThemeToggle />
           <Link
             href="/login"
