@@ -7,6 +7,7 @@ import api from '@/utils/api';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
 
 function RegisterContent() {
+  const [accountRole, setAccountRole] = useState('PUBLISHER');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -31,11 +32,16 @@ function RegisterContent() {
         email,
         password,
         mobile,
-        role: 'PUBLISHER',
+        role: accountRole,
         referralCode: effectiveReferralCode || undefined,
       });
-      alert('Registration successful! Please login once your account is approved by an Admin.');
-      router.push('/login');
+      if (accountRole === 'ADMIN') {
+        alert('Admin registration successful! You can now sign in with your admin account.');
+        router.push('/login?role=ADMIN');
+      } else {
+        alert('Registration successful! Please login once your account is approved by an Admin.');
+        router.push('/login');
+      }
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Registration failed');
     } finally {
@@ -48,6 +54,8 @@ function RegisterContent() {
     router.push('/login');
   };
 
+  const isAdminSignup = accountRole === 'ADMIN';
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-8 sm:px-6">
       <div className="card animate-fade-in w-full max-w-md border-white/10 bg-surface/90 p-6 shadow-[0_28px_90px_rgba(0,0,0,0.45)] backdrop-blur-sm sm:p-8">
@@ -55,9 +63,13 @@ function RegisterContent() {
           <Link href="/" className="text-3xl font-semibold tracking-tight">
             Store<span className="text-accent">Gram</span>
           </Link>
-          <h2 className="mt-4 text-2xl font-semibold text-foreground">Publisher Registration</h2>
+          <h2 className="mt-4 text-2xl font-semibold text-foreground">
+            {isAdminSignup ? 'Admin Registration' : 'Publisher Registration'}
+          </h2>
           <p className="mt-3 text-sm text-muted">
-            Create your publisher account and use a referral code if you have one.
+            {isAdminSignup
+              ? 'Create an admin account. Google sign up is disabled for admins.'
+              : 'Create your publisher account and use a referral code if you have one.'}
           </p>
         </div>
 
@@ -68,6 +80,18 @@ function RegisterContent() {
         )}
 
         <form onSubmit={handleRegister} className="space-y-5">
+          <div className="input-group">
+            <label>Account Type</label>
+            <select
+              className="input"
+              value={accountRole}
+              onChange={(event) => setAccountRole(event.target.value)}
+            >
+              <option value="PUBLISHER">Publisher</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+
           <div className="input-group">
             <label>Full Name</label>
             <input
@@ -113,35 +137,45 @@ function RegisterContent() {
             />
           </div>
 
-          <div className="input-group">
-            <label>Referral Code (Optional)</label>
-            <input
-              type="text"
-              className="input"
-              value={effectiveReferralCode}
-              onChange={(event) => setReferralCode(event.target.value)}
-            />
-          </div>
+          {!isAdminSignup && (
+            <div className="input-group">
+              <label>Referral Code (Optional)</label>
+              <input
+                type="text"
+                className="input"
+                value={effectiveReferralCode}
+                onChange={(event) => setReferralCode(event.target.value)}
+              />
+            </div>
+          )}
 
           <button type="submit" className="btn btn-primary mt-2 w-full" disabled={loading}>
-            {loading ? 'Registering...' : 'Sign Up'}
+            {loading ? 'Registering...' : isAdminSignup ? 'Create Admin Account' : 'Sign Up'}
           </button>
-          
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10"></div>
+
+          {!isAdminSignup ? (
+            <>
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-[#0f0f0f] px-2 text-muted">Or continue with</span>
+                </div>
+              </div>
+
+              <GoogleLoginButton
+                onSuccess={handleGoogleSuccess}
+                onError={(msg) => setError(msg)}
+                isRegister={true}
+                referralCode={effectiveReferralCode}
+              />
+            </>
+          ) : (
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-muted">
+              Admin accounts must use email and password. Google sign up is only available for publishers.
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-[#0f0f0f] px-2 text-muted">Or continue with</span>
-            </div>
-          </div>
-          
-          <GoogleLoginButton 
-            onSuccess={handleGoogleSuccess} 
-            onError={(msg) => setError(msg)} 
-            isRegister={true}
-            referralCode={effectiveReferralCode}
-          />
+          )}
         </form>
 
         <div className="mt-6 text-center">

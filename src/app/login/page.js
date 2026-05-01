@@ -3,6 +3,7 @@
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
+import Cookies from 'js-cookie';
 import api from '@/utils/api';
 import {
   getPublisherToken,
@@ -12,19 +13,27 @@ import {
 } from '@/utils/auth';
 import GoogleLoginButton from '@/components/GoogleLoginButton';
 
+const ADMIN_PORTAL_URL =
+  process.env.NEXT_PUBLIC_ADMIN_PORTAL_URL?.trim() ||
+  process.env.NEXT_PUBLIC_ADMIN_LOGIN_URL?.trim();
+
 function LoginContent() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const requestedRole = searchParams.get('role');
+  const initialRole = requestedRole === 'ADMIN' ? 'ADMIN' : 'PUBLISHER';
+  const [accountRole, setAccountRole] = useState(initialRole);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const router = useRouter();
-  const searchParams = useSearchParams();
   const nextPath = searchParams.get('next') || '/publisher';
   const reason = searchParams.get('reason');
   const approvalMessage =
     reason === 'approval'
       ? 'Your publisher account is still waiting for admin approval.'
       : '';
+  const isAdminLogin = accountRole === 'ADMIN';
 
   useEffect(() => {
     const token = getPublisherToken();
@@ -35,6 +44,18 @@ function LoginContent() {
     }
   }, [nextPath, router]);
 
+  const handleAdminSuccess = (user, token) => {
+    Cookies.set('adminToken', token, { expires: 7 });
+    Cookies.set('adminUser', JSON.stringify(user), { expires: 7 });
+
+    if (ADMIN_PORTAL_URL) {
+      window.location.href = ADMIN_PORTAL_URL;
+      return;
+    }
+
+    setError('Admin login succeeded. Open the admin portal in this browser to continue.');
+  };
+
   const handleLogin = async (event) => {
     event.preventDefault();
     setLoading(true);
@@ -42,18 +63,28 @@ function LoginContent() {
 
     try {
       const response = await api.post('/api/auth/login', { email, password });
+      const { user, token } = response.data;
 
-      if (!isPublisherUser(response.data.user)) {
+      if (accountRole === 'ADMIN') {
+        if (user.role !== 'ADMIN') {
+          throw new Error('This login is only for admin accounts.');
+        }
+
+        handleAdminSuccess(user, token);
+        return;
+      }
+
+      if (!isPublisherUser(user)) {
         throw new Error('This login is only for publisher accounts.');
       }
 
-      if (!response.data.user.is_approved) {
+      if (!user.is_approved) {
         throw new Error('Your publisher account is pending approval.');
       }
 
       setPublisherSession({
-        token: response.data.token,
-        user: response.data.user,
+        token,
+        user,
       });
 
       router.push(nextPath);
@@ -87,12 +118,16 @@ function LoginContent() {
           <Link href="/" className="text-3xl font-semibold tracking-tight">
             Store<span className="text-accent">Gram</span>
           </Link>
-          <p className="mt-4 text-xs uppercase tracking-[0.32em] text-muted">Publisher Access</p>
+          <p className="mt-4 text-xs uppercase tracking-[0.32em] text-muted">
+            {isAdminLogin ? 'Admin Access' : 'Publisher Access'}
+          </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
             Welcome back
           </h1>
           <p className="mt-3 text-sm text-muted">
-            Sign in to upload content, track analytics, and manage your account.
+            {isAdminLogin
+              ? 'Sign in to manage publishers, files, storage, and withdrawals.'
+              : 'Sign in to upload content, track analytics, and manage your account.'}
           </p>
         </div>
 
@@ -104,6 +139,18 @@ function LoginContent() {
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div className="input-group">
+            <label>Account Type</label>
+            <select
+              className="input"
+              value={accountRole}
+              onChange={(event) => setAccountRole(event.target.value)}
+            >
+              <option value="PUBLISHER">Publisher</option>
+              <option value="ADMIN">Admin</option>
+            </select>
+          </div>
+
+          <div className="input-group">
             <label>Email Address</label>
             <input
               type="email"
@@ -111,7 +158,7 @@ function LoginContent() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
-              placeholder="publisher@example.com"
+              placeholder={isAdminLogin ? 'admin@storegram.com' : 'publisher@example.com'}
             />
           </div>
 
@@ -139,21 +186,29 @@ function LoginContent() {
           <button type="submit" className="btn btn-primary mt-2 w-full" disabled={loading}>
             {loading ? 'Logging in...' : 'Sign In'}
           </button>
-          
-          <div className="relative my-6">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-white/10"></div>
+
+          {!isAdminLogin ? (
+            <>
+              <div className="relative my-6">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-white/10"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="bg-[#0f0f0f] px-2 text-muted">Or continue with</span>
+                </div>
+              </div>
+
+              <GoogleLoginButton
+                onSuccess={handleGoogleSuccess}
+                onError={(msg) => setError(msg)}
+                isRegister={false}
+              />
+            </>
+          ) : (
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-muted">
+              Google login is only available for publisher accounts.
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="bg-[#0f0f0f] px-2 text-muted">Or continue with</span>
-            </div>
-          </div>
-          
-          <GoogleLoginButton 
-            onSuccess={handleGoogleSuccess} 
-            onError={(msg) => setError(msg)} 
-            isRegister={false} 
-          />
+          )}
         </form>
 
         <div className="mt-6 text-center">
