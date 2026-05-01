@@ -222,13 +222,19 @@ function PreviewContent({ file }) {
 
   if (previewType === 'video') {
     return (
-      <video
-        src={file.file_url}
-        controls
-        playsInline
-        preload="metadata"
-        className="max-h-[70vh] w-full bg-black"
-      />
+      <div className="relative w-full">
+        <video
+          src={file.file_url}
+          playsInline
+          muted
+          preload="auto"
+          aria-label={file.title || 'Video preview'}
+          className="pointer-events-none max-h-[70vh] w-full bg-black object-contain"
+        />
+        <div className="pointer-events-none absolute inset-x-4 bottom-4 rounded-full bg-black/70 px-4 py-2 text-center text-xs font-semibold uppercase tracking-[0.12em] text-white backdrop-blur-sm">
+          Preview Only
+        </div>
+      </div>
     );
   }
 
