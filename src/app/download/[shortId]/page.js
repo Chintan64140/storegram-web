@@ -1,16 +1,20 @@
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import PublicDownloadActions from '@/components/PublicDownloadActions';
 import {
   Download,
-  ExternalLink,
   PlaySquare,
-  Smartphone,
 } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://storegram-backend-39ki.onrender.com';
-const APP_VIEW_BASE_URL =
+const DEFAULT_API_URL = 'https://storegram-backend-39ki.onrender.com';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || DEFAULT_API_URL;
+const DEFAULT_APP_DEEP_LINK_BASE = 'storegram://download';
+const APP_DEEP_LINK_BASE =
+  process.env.NEXT_PUBLIC_APP_DEEP_LINK_BASE?.trim() || DEFAULT_APP_DEEP_LINK_BASE;
+const APP_VIEW_FALLBACK_URL =
   process.env.NEXT_PUBLIC_APP_VIEW_URL?.trim() ||
-  process.env.NEXT_PUBLIC_APP_DEEP_LINK_BASE?.trim();
+  process.env.NEXT_PUBLIC_APP_STORE_URL?.trim() ||
+  '/#app';
 
 const VIDEO_EXTENSIONS = new Set(['mp4', 'mkv', 'webm', 'mov', 'm4v']);
 const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp', 'svg']);
@@ -122,32 +126,44 @@ function getFileHostLabel(fileUrl) {
 }
 
 async function getFile(shortId) {
-  const response = await fetch(`${API_URL}/api/files/${shortId}`, {
-    cache: 'no-store',
-  });
+  const baseUrls = [...new Set([API_URL, DEFAULT_API_URL].map((value) => value?.trim()).filter(Boolean))];
+  let lastError = null;
 
-  if (!response.ok) {
-    return null;
+  for (const baseUrl of baseUrls) {
+    try {
+      const response = await fetch(`${baseUrl.replace(/\/$/, '')}/api/files/${shortId}`, {
+        cache: 'no-store',
+      });
+
+      if (!response.ok) {
+        lastError = new Error(`Fetch failed with status ${response.status} for ${baseUrl}`);
+        continue;
+      }
+
+      const data = await response.json();
+      return data || null;
+    } catch (error) {
+      lastError = error;
+    }
   }
 
-  const data = await response.json();
-  return data?.file || null;
+  if (lastError) {
+    console.error('Failed to load public file preview', lastError);
+  }
+
+  return null;
 }
 
-function buildAppViewUrl(file, shortId) {
+function buildAppDeepLink(file, shortId) {
   const directAppUrl = file?.app_view_url || file?.deep_link_url || file?.app_url;
 
   if (directAppUrl) {
     return directAppUrl;
   }
 
-  if (!APP_VIEW_BASE_URL) {
-    return '/#app';
-  }
-
-  return APP_VIEW_BASE_URL.includes('{shortId}')
-    ? APP_VIEW_BASE_URL.replace('{shortId}', shortId)
-    : `${APP_VIEW_BASE_URL.replace(/\/$/, '')}/${shortId}`;
+  return APP_DEEP_LINK_BASE.includes('{shortId}')
+    ? APP_DEEP_LINK_BASE.replace('{shortId}', shortId)
+    : `${APP_DEEP_LINK_BASE.replace(/\/$/, '')}/${shortId}`;
 }
 
 function buildPreviewDetails(file, shortId, previewType) {
@@ -241,31 +257,17 @@ function PreviewContent({ file }) {
     <div className="p-6 text-center sm:p-8">
       <h2 className="mb-3 text-lg font-bold">Preview not available inline</h2>
       <p className="mx-auto mb-5 max-w-md text-sm text-muted sm:text-base">
-        This file type does not have an embedded preview yet, but you can still open it in a new
-        tab, download it directly, or continue in the app.
+        This file type does not have an embedded preview yet. Continue in the StoreGram app to
+        access it.
       </p>
-      <div className="flex flex-col justify-center gap-3 sm:flex-row">
-        <a
-          href={file.file_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="btn btn-primary w-full sm:w-auto"
-        >
-          <ExternalLink size={16} />
-          Open File
-        </a>
-        <a href={file.file_url} target="_blank" rel="noopener noreferrer" className="btn w-full sm:w-auto">
-          <Download size={16} />
-          Download
-        </a>
-      </div>
     </div>
   );
 }
 
 export default async function DownloadPage({ params }) {
   const { shortId } = await params;
-  const file = await getFile(shortId);
+  const previewPayload = await getFile(shortId);
+  const file = previewPayload?.file || null;
 
   if (!file) {
     return (
@@ -287,7 +289,7 @@ export default async function DownloadPage({ params }) {
   }
 
   const previewType = getPreviewType(file);
-  const appViewUrl = buildAppViewUrl(file, shortId);
+  const appDeepLink = buildAppDeepLink(file, shortId);
   const previewDetails = buildPreviewDetails(file, shortId, previewType);
 
   return (
@@ -322,6 +324,19 @@ export default async function DownloadPage({ params }) {
               <div className="flex min-h-[260px] items-center justify-center overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.03] sm:min-h-[440px]">
                 <PreviewContent file={file} />
               </div>
+
+              <div className="mt-4">
+                <PublicDownloadActions
+                  appDeepLink={appDeepLink}
+                  appFallbackUrl={APP_VIEW_FALLBACK_URL}
+                  trackingStartUrl={previewPayload?.tracking?.startUrl || null}
+                  compact
+                />
+              </div>
+
+              <p className="mt-4 text-sm text-muted">
+                If the embedded preview is limited on your device, continue in the StoreGram app.
+              </p>
             </section>
 
             <aside className="space-y-5">
@@ -332,31 +347,15 @@ export default async function DownloadPage({ params }) {
                   </div>
                   <div>
                     <div className="text-sm font-semibold text-foreground">Ready to continue</div>
-                    <div className="text-xs text-muted">Download on web or open in the app</div>
+                    <div className="text-xs text-muted">Open this file in the StoreGram app</div>
                   </div>
                 </div>
 
-                <div className="space-y-3">
-                  <a
-                    href={file.file_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn btn-primary w-full justify-center"
-                  >
-                    <Download size={18} />
-                    Download File
-                  </a>
-
-                  <a
-                    href={appViewUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn w-full justify-center border border-white/10 bg-white/5 text-foreground hover:bg-white/10"
-                  >
-                    <Smartphone size={18} />
-                    View In App
-                  </a>
-                </div>
+                <PublicDownloadActions
+                  appDeepLink={appDeepLink}
+                  appFallbackUrl={APP_VIEW_FALLBACK_URL}
+                  trackingStartUrl={previewPayload?.tracking?.startUrl || null}
+                />
 
                 <p className="mt-4 text-xs text-muted">
                   By accessing this file, you agree to the StoreGram terms of service.
