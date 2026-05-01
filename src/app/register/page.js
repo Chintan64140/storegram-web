@@ -82,14 +82,30 @@ function RegisterContent() {
         <form onSubmit={handleRegister} className="space-y-5">
           <div className="input-group">
             <label>Account Type</label>
-            <select
-              className="input"
-              value={accountRole}
-              onChange={(event) => setAccountRole(event.target.value)}
-            >
-              <option value="PUBLISHER">Publisher</option>
-              <option value="ADMIN">Admin</option>
-            </select>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setAccountRole('PUBLISHER')}
+                className={`rounded-2xl border px-4 py-3 text-sm font-medium transition ${
+                  accountRole === 'PUBLISHER'
+                    ? 'border-accent bg-accent/15 text-foreground'
+                    : 'border-white/10 bg-white/5 text-muted hover:border-white/20 hover:text-foreground'
+                }`}
+              >
+                Publisher
+              </button>
+              <button
+                type="button"
+                onClick={() => setAccountRole('ADMIN')}
+                className={`rounded-2xl border px-4 py-3 text-sm font-medium transition ${
+                  accountRole === 'ADMIN'
+                    ? 'border-accent bg-accent/15 text-foreground'
+                    : 'border-white/10 bg-white/5 text-muted hover:border-white/20 hover:text-foreground'
+                }`}
+              >
+                Admin
+              </button>
+            </div>
           </div>
 
           <div className="input-group">

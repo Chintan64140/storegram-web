@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import Cookies from 'js-cookie';
 import api from '@/utils/api';
 import {
+  clearPublisherSession,
   getPublisherToken,
   getStoredPublisherUser,
   isPublisherUser,
@@ -20,9 +21,6 @@ const ADMIN_PORTAL_URL =
 function LoginContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const requestedRole = searchParams.get('role');
-  const initialRole = requestedRole === 'ADMIN' ? 'ADMIN' : 'PUBLISHER';
-  const [accountRole, setAccountRole] = useState(initialRole);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -33,7 +31,6 @@ function LoginContent() {
     reason === 'approval'
       ? 'Your publisher account is still waiting for admin approval.'
       : '';
-  const isAdminLogin = accountRole === 'ADMIN';
 
   useEffect(() => {
     const token = getPublisherToken();
@@ -44,7 +41,18 @@ function LoginContent() {
     }
   }, [nextPath, router]);
 
+  const clearAdminSession = () => {
+    Cookies.remove('adminToken');
+    Cookies.remove('adminUser');
+  };
+
+  const clearAllSessions = () => {
+    clearPublisherSession();
+    clearAdminSession();
+  };
+
   const handleAdminSuccess = (user, token) => {
+    clearPublisherSession();
     Cookies.set('adminToken', token, { expires: 7 });
     Cookies.set('adminUser', JSON.stringify(user), { expires: 7 });
 
@@ -65,29 +73,38 @@ function LoginContent() {
       const response = await api.post('/api/auth/login', { email, password });
       const { user, token } = response.data;
 
-      if (accountRole === 'ADMIN') {
-        if (user.role !== 'ADMIN') {
-          throw new Error('This login is only for admin accounts.');
-        }
-
+      if (user.role === 'ADMIN') {
         handleAdminSuccess(user, token);
         return;
       }
 
-      if (!isPublisherUser(user)) {
-        throw new Error('This login is only for publisher accounts.');
+      if (isPublisherUser(user)) {
+        clearAdminSession();
+
+        if (!user.is_approved) {
+          throw new Error('Your publisher account is pending approval.');
+        }
+
+        setPublisherSession({
+          token,
+          user,
+        });
+
+        router.push(nextPath);
+        return;
       }
 
-      if (!user.is_approved) {
-        throw new Error('Your publisher account is pending approval.');
-      }
-
-      setPublisherSession({
-        token,
-        user,
-      });
-
-      router.push(nextPath);
+      clearAllSessions();
+      await api.post(
+        '/api/auth/logout',
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      throw new Error('This login is only available for publisher and admin accounts.');
     } catch (err) {
       setError(err.response?.data?.error || err.message || 'Login failed');
     } finally {
@@ -96,6 +113,7 @@ function LoginContent() {
   };
 
   const handleGoogleSuccess = (data) => {
+    clearAdminSession();
     if (!isPublisherUser(data.user)) {
       setError('This login is only for publisher accounts.');
       return;
@@ -119,15 +137,13 @@ function LoginContent() {
             Store<span className="text-accent">Gram</span>
           </Link>
           <p className="mt-4 text-xs uppercase tracking-[0.32em] text-muted">
-            {isAdminLogin ? 'Admin Access' : 'Publisher Access'}
+            Publisher And Admin Access
           </p>
           <h1 className="mt-3 text-3xl font-semibold tracking-tight text-foreground">
             Welcome back
           </h1>
           <p className="mt-3 text-sm text-muted">
-            {isAdminLogin
-              ? 'Sign in to manage publishers, files, storage, and withdrawals.'
-              : 'Sign in to upload content, track analytics, and manage your account.'}
+            Sign in and we&apos;ll route you to the correct dashboard based on your account role.
           </p>
         </div>
 
@@ -139,18 +155,6 @@ function LoginContent() {
 
         <form onSubmit={handleLogin} className="space-y-5">
           <div className="input-group">
-            <label>Account Type</label>
-            <select
-              className="input"
-              value={accountRole}
-              onChange={(event) => setAccountRole(event.target.value)}
-            >
-              <option value="PUBLISHER">Publisher</option>
-              <option value="ADMIN">Admin</option>
-            </select>
-          </div>
-
-          <div className="input-group">
             <label>Email Address</label>
             <input
               type="email"
@@ -158,7 +162,7 @@ function LoginContent() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               required
-              placeholder={isAdminLogin ? 'admin@storegram.com' : 'publisher@example.com'}
+              placeholder="publisher@example.com or admin@storegram.com"
             />
           </div>
 
@@ -187,28 +191,24 @@ function LoginContent() {
             {loading ? 'Logging in...' : 'Sign In'}
           </button>
 
-          {!isAdminLogin ? (
-            <>
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-white/10"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="bg-[#0f0f0f] px-2 text-muted">Or continue with</span>
-                </div>
-              </div>
-
-              <GoogleLoginButton
-                onSuccess={handleGoogleSuccess}
-                onError={(msg) => setError(msg)}
-                isRegister={false}
-              />
-            </>
-          ) : (
-            <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-muted">
-              Google login is only available for publisher accounts.
+          <div className="relative my-6">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-white/10"></div>
             </div>
-          )}
+            <div className="relative flex justify-center text-sm">
+              <span className="bg-[#0f0f0f] px-2 text-muted">Or continue with</span>
+            </div>
+          </div>
+
+          <GoogleLoginButton
+            onSuccess={handleGoogleSuccess}
+            onError={(msg) => setError(msg)}
+            isRegister={false}
+          />
+
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-muted">
+            Google login is only available for publisher accounts.
+          </div>
         </form>
 
         <div className="mt-6 text-center">
